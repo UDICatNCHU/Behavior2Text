@@ -1,28 +1,29 @@
 import requests, os, json, threading
 from udicOpenData.stopwords import rmsw
 from collections import defaultdict, Counter
-from json import JSONDecodeError
 
 class Behavior2Text(object):
     def __init__(self):
         self.template = json.load(open('template.json', 'r'))
-        self.accessibility_log = 'JSON'
+        self.accessibility_log = 'Human'
         self.output = 'result.json'
         self.outputContext = 'outputContext.json'
+        # self.EntityOnly = False
+        self.EntityOnly = True
 
 
     def sentence(self, log):
         # topn = json.load(open(file, 'r'))[:3]
-        topn = log[:3]
+        # topn = log[:3 ]
+        topn = log[:5]
 
         candidate = defaultdict(dict)
         for index, template in enumerate(self.template):
             for value in template['value']:
                 candidate[str(index)].setdefault(template['key'][value], {})
                 for topnKeyword in topn:
-                    try:
-                        result = requests.get('http://udiclab.cs.nchu.edu.tw/kem/similarity?k1={}&k2={}'.format(template['key'][value], topnKeyword[0])).json()
-                    except JSONDecodeError as e:
+                    result = requests.get('http://udiclab.cs.nchu.edu.tw/kem/similarity?k1={}&k2={}'.format(template['key'][value], topnKeyword[0])).json()
+                    if result == {}:
                         continue
 
                     # Set keyword similarity threshold here
@@ -66,21 +67,27 @@ class Behavior2Text(object):
         if os.path.isfile('result.json'):
             return
         final = []
-        contextList = []
-        for (dir_path, dir_names, file_names) in os.walk(self.accessibility_log):
-            for file in file_names:
-                context = ''.join([i['context'] for i in json.load(open(os.path.join(dir_path,file)))])
-                wordCount = Counter(rmsw(context, 'n'))
-                result = requests.post('http://udiclab.cs.nchu.edu.tw/kcem/countertopn', data={'doc':json.dumps(wordCount)})
-                if result.json() == []:
-                    continue
+        fileNameList = []
 
-                result = [i for i in result.json() if '消歧義' not in i[0]]
-                final.append(result)
-                contextList.append(context)
+        for (dir_path, dir_names, file_names) in os.walk(self.accessibility_log):
+            if dir_path.endswith('/IRI'):
+                for file in file_names:
+                    context = ''.join([i['context'] for i in json.load(open(os.path.join(dir_path,file)))])
+                    wordCount = Counter(rmsw(context, 'n'))
+
+                    if self.EntityOnly:
+                        result = requests.post('http://udiclab.cs.nchu.edu.tw/kcem/countertopn?EntityOnly=true', data={'doc':json.dumps(wordCount)})
+                    else:
+                        result = requests.post('http://udiclab.cs.nchu.edu.tw/kcem/countertopn', data={'doc':json.dumps(wordCount)})
+                    if result.json() == []:
+                        continue
+
+                    result = [i for i in result.json() if '消歧義' not in i[0]]
+                    final.append(result)
+                    fileNameList.append(os.path.join(dir_path,file))
 
         json.dump(final, open(self.output, 'w'))
-        json.dump(contextList, open(self.outputContext, 'w'))
+        json.dump(fileNameList, open(self.outputContext, 'w'))
 
 if __name__ == '__main__':
     import sys, pyprind
@@ -88,5 +95,5 @@ if __name__ == '__main__':
 
     if sys.argv[1] == 'b':
         b.buildTopn()
-    for i in pyprind.prog_bar(json.load(open('result.json', 'r'))):
+    for i in json.load(open('result.json', 'r')):
         print(b.sentence(i))
