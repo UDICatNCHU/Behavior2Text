@@ -1,5 +1,4 @@
 import requests, os, json, threading
-from udicOpenData.stopwords import rmsw
 from collections import defaultdict, Counter
 
 class Behavior2Text(object):
@@ -8,22 +7,23 @@ class Behavior2Text(object):
         self.accessibility_log = 'Human'
         self.output = 'result.json'
         self.outputContext = 'outputContext.json'
-        # self.EntityOnly = False
-        self.EntityOnly = True
-
+        self.EntityOnly = False
+        # self.EntityOnly = True
 
     def sentence(self, log):
         # topn = json.load(open(file, 'r'))[:3]
         # topn = log[:3 ]
         topn = log[:5]
-
+        print(topn)
         candidate = defaultdict(dict)
         for index, template in enumerate(self.template):
             for value in template['value']:
                 candidate[str(index)].setdefault(template['key'][value], {})
                 for topnKeyword in topn:
-                    result = requests.get('http://udiclab.cs.nchu.edu.tw/kem/similarity?k1={}&k2={}'.format(template['key'][value], topnKeyword[0])).json()
+                    print(template['key'][value], topnKeyword[1]['key'][0])
+                    result = requests.get('http://udiclab.cs.nchu.edu.tw/kem/similarity?k1={}&k2={}'.format(template['key'][value], topnKeyword[1]['key'][0])).json()
                     if result == {}:
+                        print(template['key'][value], topnKeyword[0], "fail")
                         continue
 
                     # Set keyword similarity threshold here
@@ -61,6 +61,7 @@ class Behavior2Text(object):
 
 
     def buildTopn(self):
+        from udicOpenData.stopwords import rmsw
         '''
         use accessibility log to extract topN keyword
         '''
@@ -82,9 +83,10 @@ class Behavior2Text(object):
                     if result.json() == []:
                         continue
 
-                    result = [i for i in result.json() if '消歧義' not in i[0]]
-                    final.append(result)
-                    fileNameList.append(os.path.join(dir_path,file))
+                    # result = [i for i in result.json() if '消歧義' not in i[0]]
+                    print(result.json())
+                    final.append(result.json())
+                    fileNameList.append((os.path.join(dir_path,file), wordCount, context))
 
         json.dump(final, open(self.output, 'w'))
         json.dump(fileNameList, open(self.outputContext, 'w'))
