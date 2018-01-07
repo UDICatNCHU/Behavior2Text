@@ -1,5 +1,7 @@
 import requests, os, json, threading
 from collections import defaultdict, Counter
+from scipy import spatial
+import numpy as np
 
 class Behavior2Text(object):
     def __init__(self):
@@ -10,32 +12,26 @@ class Behavior2Text(object):
         self.EntityOnly = False
         # self.EntityOnly = True
 
-    def sentence(self, log):
-        # topn = json.load(open(file, 'r'))[:3]
-        # topn = log[:3 ]
-        topn = log[:5]
-        print(topn)
+    def sentence(self, topn):
+        topn = dict(sorted(topn.items(), key=lambda x:-x[1]['count'])[:5])
+
         candidate = defaultdict(dict)
         for index, template in enumerate(self.template):
             for value in template['value']:
                 candidate[str(index)].setdefault(template['key'][value], {})
                 for topnKeyword in topn:
-                    print(template['key'][value], topnKeyword[1]['key'][0])
-                    result = requests.get('http://udiclab.cs.nchu.edu.tw/kem/similarity?k1={}&k2={}'.format(template['key'][value], topnKeyword[1]['key'][0])).json()
+                    result = requests.get('http://udiclab.cs.nchu.edu.tw/kem/similarity?k1={}&k2={}'.format(template['key'][value], topnKeyword)).json()
                     if result == {}:
-                        print(template['key'][value], topnKeyword[0], "fail")
                         continue
 
-                    # Set keyword similarity threshold here
-                    # if result['k2Similarity'] == 1:
-                    #     candidate[str(index)][template['key'][value]][topnKeyword[0]] = result['similarity']
-                    candidate[str(index)][template['key'][value]][topnKeyword[0]] = result['similarity']
+                    candidate[str(index)][template['key'][value]][topnKeyword] = result['similarity']
                         
                 candidate[str(index)]['sum'] = candidate[str(index)].setdefault('sum', 0) + max(candidate[str(index)][template['key'][value]].values(), default=0)
 
         # select most possible template to generate sentence
         index, top1 = sorted(candidate.items(), key=lambda x:-x[1]['sum'])[0]
         del top1['sum']
+
         def generate(topn, raw=False):
             select = set()
             result = {}
@@ -54,13 +50,19 @@ class Behavior2Text(object):
 
             # use raw data to generate sentence
             if raw:
-                topn = dict(topn)
-                result = {k:'、'.join(topn[v]['key']) for k,v in result.items()}
+                result = {k: sorted(topn[v]['key'].items(), key=lambda x:-x[1])[0][0] for k,v in result.items()}
             return ''.join(map(lambda x:result.get(x, x), self.template[int(index)]['key']))
         return generate(topn), generate(topn, raw=True)
 
 
     def buildTopn(self):
+        def doc2vec(wordCount):
+            vec = np.zeros(400)
+            for word, count in wordCount.items():
+                vec += np.array(requests.get('http://udiclab.cs.nchu.edu.tw/kem/vector?keyword={}'.format(word)).json()['value']) * count
+            return vec / sum(wordCount.values())
+
+
         from udicOpenData.stopwords import rmsw
         '''
         use accessibility log to extract topN keyword
@@ -75,17 +77,39 @@ class Behavior2Text(object):
                 for file in file_names:
                     context = ''.join([i['context'] for i in json.load(open(os.path.join(dir_path,file)))])
                     wordCount = Counter(rmsw(context, 'n'))
+                    docVec = doc2vec(wordCount)
 
                     if self.EntityOnly:
-                        result = requests.post('http://udiclab.cs.nchu.edu.tw/kcem/countertopn?EntityOnly=true', data={'doc':json.dumps(wordCount)})
+                        result = requests.post('http://udiclab.cs.nchu.edu.tw/kcem/countertopn?EntityOnly=true', data={'doc':json.dumps(wordCount)}).json()
                     else:
-                        result = requests.post('http://udiclab.cs.nchu.edu.tw/kcem/countertopn', data={'doc':json.dumps(wordCount)})
-                    if result.json() == []:
+                        result = requests.post('http://udiclab.cs.nchu.edu.tw/kcem/countertopn', data={'doc':json.dumps(wordCount)}).json()
+                    if result == []:
                         continue
 
-                    # result = [i for i in result.json() if '消歧義' not in i[0]]
-                    print(result.json())
-                    final.append(result.json())
+                    # Because result would has a key 全部消歧義頁面
+                    # these are all ambiguous keyword
+                    # so need some post-processing
+                    result = dict(result)
+                    for keyword, count in result.setdefault('全部消歧義頁面', {}).setdefault('key', {}).items():
+                        childs = requests.get('http://udiclab.cs.nchu.edu.tw/kcem/child?keyword={}'.format(keyword)).json()['leafNode']
+
+                        bestChild, MaxSimilarity  = '', 0
+                        for child in childs:
+                            vec = requests.get('http://udiclab.cs.nchu.edu.tw/kem/vector?keyword={}'.format(child)).json()['value']
+
+                            similarity = 1 - spatial.distance.cosine(vec, docVec) if vec != [0] * 400 and docVec.tolist() != [0]*400 else 0
+                            if similarity > MaxSimilarity and child != keyword:
+                                bestChild = child
+                                MaxSimilarity = similarity
+
+                        # use the child having Max Similarity as the correct child for ambiguous keyword
+                        concept = requests.get('http://udiclab.cs.nchu.edu.tw/kcem?keyword={}'.format(bestChild)).json()['value']
+                        concept = concept[0][0] if concept else bestChild
+                        result.setdefault(concept, {}).setdefault('key', {})[keyword] = count
+                        result[concept]['count'] = result[concept].setdefault('count', 0) + count
+                    del result['全部消歧義頁面']
+
+                    final.append(result)
                     fileNameList.append((os.path.join(dir_path,file), wordCount, context))
 
         json.dump(final, open(self.output, 'w'))
@@ -97,5 +121,5 @@ if __name__ == '__main__':
 
     if sys.argv[1] == 'b':
         b.buildTopn()
-    for i in json.load(open('result.json', 'r')):
-        print(b.sentence(i))
+    for topn in json.load(open(b.output, 'r')):
+        print(b.sentence(topn))
