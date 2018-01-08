@@ -2,10 +2,12 @@ import requests, os, json, threading
 from collections import defaultdict, Counter
 from scipy import spatial
 import numpy as np
+from itertools import takewhile
 
 class Behavior2Text(object):
     def __init__(self):
         self.template = json.load(open('template.json', 'r'))
+        self.topNum = 5
         self.accessibility_log = 'Human'
         # self.accessibility_log = 'HumanDev'
         self.output = 'result.json'
@@ -13,8 +15,14 @@ class Behavior2Text(object):
         self.EntityOnly = False
         # self.EntityOnly = True
 
+    @staticmethod
+    def getTopN(topList, n):
+        n = n if n < len(topList) else -1
+        minCount = topList[n][1]['count']
+        return takewhile(lambda x:x[1]['count'] >= minCount, topList)
+
     def sentence(self, topn):
-        topn = dict(topn[:5])
+        topn = dict(self.getTopN(topn, self.topNum))
 
         candidate = defaultdict(dict)
         for index, template in enumerate(self.template):
@@ -78,12 +86,21 @@ class Behavior2Text(object):
                 for file in file_names:
                     context = ''.join([i['context'] for i in json.load(open(os.path.join(dir_path,file)))])
                     wordCount = Counter(rmsw(context, 'n'))
+
+                    # 如果wordCount為空
+                    # 代表Context Text經過stopword過濾後沒剩下任何字
+                    if not wordCount:
+                        continue
                     docVec = doc2vec(wordCount)
+
 
                     if self.EntityOnly:
                         result = requests.post('http://udiclab.cs.nchu.edu.tw/kcem/countertopn?EntityOnly=true', data={'doc':json.dumps(wordCount)}).json()
                     else:
                         result = requests.post('http://udiclab.cs.nchu.edu.tw/kcem/countertopn', data={'doc':json.dumps(wordCount)}).json()
+
+                    # 因為countertopn 是要ngram的similarity為1才會做轉換
+                    # 如果傳到api的counter沒有任何一個字的ngram similarity為1的話，就會回傳[]
                     if result == []:
                         continue
 
