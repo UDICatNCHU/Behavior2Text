@@ -24,42 +24,45 @@ class Behavior2Text(object):
     def sentence(self, topn):
         topn = dict(self.getTopN(topn, self.topNum))
 
-        candidate = defaultdict(dict)
+        TemplateCandidate = defaultdict(dict)
         for index, template in enumerate(self.template):
             for value in template['value']:
-                candidate[str(index)].setdefault(template['key'][value], {})
+                TemplateCandidate[str(index)].setdefault(template['key'][value], {})
                 for topnKeyword in topn:
                     result = requests.get('http://udiclab.cs.nchu.edu.tw/kem/similarity?k1={}&k2={}'.format(template['key'][value], topnKeyword)).json()
                     if result == {}:
                         continue
 
-                    candidate[str(index)][template['key'][value]][topnKeyword] = result['similarity']
+                    TemplateCandidate[str(index)][template['key'][value]][topnKeyword] = result['similarity']
                         
-                candidate[str(index)]['sum'] = candidate[str(index)].setdefault('sum', 0) + max(candidate[str(index)][template['key'][value]].values(), default=0)
+                TemplateCandidate[str(index)]['sum'] = TemplateCandidate[str(index)].setdefault('sum', 0) + max(TemplateCandidate[str(index)][template['key'][value]].values(), default=0)
 
         # select most possible template to generate sentence
-        index, top1 = sorted(candidate.items(), key=lambda x:-x[1]['sum'])[0]
-        del top1['sum']
+        index, templateKeywords = sorted(TemplateCandidate.items(), key=lambda x:-x[1]['sum'])[0]
+        del templateKeywords['sum']
 
         def generate(topn, raw=False):
             select = set()
             result = {}
 
-            for i in sorted(top1.items(), key=lambda x:max(x[1].items(), key=lambda x:x[1])[1], reverse=True):
-
+            for templateKeyword, templateKeywordCandidates in sorted(templateKeywords.items(), key=lambda x:max(x[1].items(), key=lambda x:x[1])[1], reverse=True):
                 # 最好的情況是填入template的詞不要重複
                 # 但是真的沒辦法也只能重複填了...
-                best = [j for j in i[1].items() if j[0] not in select]
-                if best == []:
-                    best = [j for j in i[1].items()]
+                candidate = [templateKeywordCandidate for templateKeywordCandidate in templateKeywordCandidates.items() if templateKeywordCandidate[0] not in select]
+                if candidate == []:
+                    candidate = [templateKeywordCandidate for templateKeywordCandidate in templateKeywordCandidates.items()]
 
-                answer = max(best , key=lambda x:x[1])[0]
+                # use multiple key for max
+                # Because in some case, candidate has same similarity
+                # so need to use key length to do max
+                answer = max(candidate , key=lambda x:(x[1], x[0]))[0]
                 select.add(answer)
-                result[i[0]] = answer
+                result[templateKeyword] = answer
 
             # use raw data to generate sentence
             if raw:
-                result = {k: sorted(topn[v]['key'].items(), key=lambda x:-x[1])[0][0] for k,v in result.items()}
+                # use multiple key as the same reason above
+                result = {templateKey: sorted(topn[concept]['key'].items(), key=lambda x:(-x[1], x[0]))[0][0] for templateKey,concept in result.items()}
             return ''.join(map(lambda x:result.get(x, x), self.template[int(index)]['key']))
         return generate(topn), generate(topn, raw=True)
 
@@ -127,5 +130,5 @@ if __name__ == '__main__':
 
     if sys.argv[1] == 'b':
         b.buildTopn()
-    for topn in json.load(open(b.output, 'r')):
-        print(b.sentence(topn))
+    for index, topn in enumerate(json.load(open(b.output, 'r'))):
+        print(index, b.sentence(topn))
