@@ -7,13 +7,14 @@ class Behavior2Text(object):
     def __init__(self):
         self.template = json.load(open('template.json', 'r'))
         self.accessibility_log = 'Human'
+        # self.accessibility_log = 'HumanDev'
         self.output = 'result.json'
         self.outputContext = 'outputContext.json'
         self.EntityOnly = False
         # self.EntityOnly = True
 
     def sentence(self, topn):
-        topn = dict(sorted(topn.items(), key=lambda x:-x[1]['count'])[:5])
+        topn = dict(topn[:5])
 
         candidate = defaultdict(dict)
         for index, template in enumerate(self.template):
@@ -72,7 +73,7 @@ class Behavior2Text(object):
         final = []
         fileNameList = []
 
-        for (dir_path, dir_names, file_names) in os.walk(self.accessibility_log):
+        for (dir_path, dir_names, file_names) in pyprind.prog_bar(list(os.walk(self.accessibility_log))):
             if dir_path.endswith('/IRI'):
                 for file in file_names:
                     context = ''.join([i['context'] for i in json.load(open(os.path.join(dir_path,file)))])
@@ -91,25 +92,13 @@ class Behavior2Text(object):
                     # so need some post-processing
                     result = dict(result)
                     for keyword, count in result.setdefault('全部消歧義頁面', {}).setdefault('key', {}).items():
-                        childs = requests.get('http://udiclab.cs.nchu.edu.tw/kcem/child?keyword={}'.format(keyword)).json()['leafNode']
-
-                        bestChild, MaxSimilarity  = '', 0
-                        for child in childs:
-                            vec = requests.get('http://udiclab.cs.nchu.edu.tw/kem/vector?keyword={}'.format(child)).json()['value']
-
-                            similarity = 1 - spatial.distance.cosine(vec, docVec) if vec != [0] * 400 and docVec.tolist() != [0]*400 else 0
-                            if similarity > MaxSimilarity and child != keyword:
-                                bestChild = child
-                                MaxSimilarity = similarity
-
-                        # use the child having Max Similarity as the correct child for ambiguous keyword
-                        concept = requests.get('http://udiclab.cs.nchu.edu.tw/kcem?keyword={}'.format(bestChild)).json()['value']
-                        concept = concept[0][0] if concept else bestChild
+                        concept = requests.post('http://udiclab.cs.nchu.edu.tw/kcem/kcemDisambiguous?keyword={}'.format(keyword), data={'docvec':json.dumps(docVec.tolist())}).json()['value']
+                        concept = concept[0][0] if concept else keyword
                         result.setdefault(concept, {}).setdefault('key', {})[keyword] = count
                         result[concept]['count'] = result[concept].setdefault('count', 0) + count
                     del result['全部消歧義頁面']
 
-                    final.append(result)
+                    final.append(sorted(result.items(), key=lambda x:-x[1]['count']))
                     fileNameList.append((os.path.join(dir_path,file), wordCount, context))
 
         json.dump(final, open(self.output, 'w'))
