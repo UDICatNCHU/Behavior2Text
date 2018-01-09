@@ -35,7 +35,7 @@ class Behavior2Text(object):
 
                     TemplateCandidate[str(index)][template['key'][value]][topnKeyword] = result['similarity']
                         
-                TemplateCandidate[str(index)]['sum'] = TemplateCandidate[str(index)].setdefault('sum', 0) + max(TemplateCandidate[str(index)][template['key'][value]].values(), default=0)
+                TemplateCandidate[str(index)]['sum'] = TemplateCandidate[str(index)].setdefault('sum', 0) + max(TemplateCandidate[str(index)][template['key'][value]].values(), default=0) / len(template['value'])
 
         # select most possible template to generate sentence
         index, templateKeywords = sorted(TemplateCandidate.items(), key=lambda x:-x[1]['sum'])[0]
@@ -64,7 +64,7 @@ class Behavior2Text(object):
                 # use multiple key as the same reason above
                 result = {templateKey: sorted(topn[concept]['key'].items(), key=lambda x:(-x[1], x[0]))[0][0] for templateKey,concept in result.items()}
             return ''.join(map(lambda x:result.get(x, x), self.template[int(index)]['key']))
-        return generate(topn), generate(topn, raw=True)
+        return generate(topn, raw=True)
 
     def tfidfSentence(self):
         def tfidfTopn(topList, n):
@@ -72,7 +72,9 @@ class Behavior2Text(object):
             minCount = topList[n][1]
             return takewhile(lambda x:x[1] >= minCount, topList)
 
-        for (dir_path, dir_names, file_names) in pyprind.prog_bar(list(os.walk(self.accessibility_log))):
+        tfidfList = []
+
+        for (dir_path, dir_names, file_names) in os.walk(self.accessibility_log):
             if dir_path.endswith('/IRI'):
                 for file in file_names:
                     context = ''.join([i['context'] for i in json.load(open(os.path.join(dir_path,file)))])
@@ -80,6 +82,7 @@ class Behavior2Text(object):
                     if not tfidf:
                         continue
                     tfidf = list(tfidfTopn(tfidf, self.topNum))
+                    tfidfList.append(tfidf)
                     
                     TemplateCandidate = defaultdict(dict)
                     for index, template in enumerate(self.template):
@@ -118,6 +121,7 @@ class Behavior2Text(object):
                         # use raw data to generate sentence
                         return ''.join(map(lambda x:result.get(x, x), self.template[int(index)]['key']))
                     print(generate())
+        json.dump(tfidfList, open('tfidf.json', 'w'))
 
 
     def buildTopn(self):
