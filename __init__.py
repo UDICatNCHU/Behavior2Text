@@ -12,6 +12,7 @@ class Behavior2Text(object):
         # self.accessibility_log = 'HumanDev'
         self.output = 'result.json'
         self.outputContext = 'outputContext.json'
+        self.goodlog = json.load(open('goodlog.json', 'r'))
         self.EntityOnly = False
         # self.EntityOnly = True
 
@@ -77,50 +78,51 @@ class Behavior2Text(object):
         for (dir_path, dir_names, file_names) in os.walk(self.accessibility_log):
             if dir_path.endswith('/IRI'):
                 for file in file_names:
-                    context = ''.join([i['context'] for i in json.load(open(os.path.join(dir_path,file)))])
-                    tfidf = requests.post('http://udiclab.cs.nchu.edu.tw/tfidf/tfidf?flag=n', data={'doc':context}).json()
-                    if not tfidf:
-                        continue
-                    tfidf = list(tfidfTopn(tfidf, self.topNum))
-                    tfidfList.append(tfidf)
-                    
-                    TemplateCandidate = defaultdict(dict)
-                    for index, template in enumerate(self.template):
-                        for value in template['value']:
-                            TemplateCandidate[str(index)].setdefault(template['key'][value], {})
-                            for topnKeyword, _ in tfidf:
-                                result = requests.get('http://udiclab.cs.nchu.edu.tw/kem/similarity?k1={}&k2={}'.format(template['key'][value], topnKeyword)).json()
-                                if result == {}:
-                                    continue
+                    if os.path.join(dir_path,file) in self.goodlog:
+                        context = ''.join([i['context'] for i in json.load(open(os.path.join(dir_path,file)))])
+                        tfidf = requests.post('http://udiclab.cs.nchu.edu.tw/tfidf/tfidf?flag=n', data={'doc':context}).json()
+                        if not tfidf:
+                            continue
+                        tfidf = list(tfidfTopn(tfidf, self.topNum))
+                        tfidfList.append((os.path.join(dir_path,file), tfidf))
+                        
+                        TemplateCandidate = defaultdict(dict)
+                        for index, template in enumerate(self.template):
+                            for value in template['value']:
+                                TemplateCandidate[str(index)].setdefault(template['key'][value], {})
+                                for topnKeyword, _ in tfidf:
+                                    result = requests.get('http://udiclab.cs.nchu.edu.tw/kem/similarity?k1={}&k2={}'.format(template['key'][value], topnKeyword)).json()
+                                    if result == {}:
+                                        continue
 
-                                TemplateCandidate[str(index)][template['key'][value]][topnKeyword] = result['similarity']
-                                    
-                            TemplateCandidate[str(index)]['sum'] = TemplateCandidate[str(index)].setdefault('sum', 0) + max(TemplateCandidate[str(index)][template['key'][value]].values(), default=0)
+                                    TemplateCandidate[str(index)][template['key'][value]][topnKeyword] = result['similarity']
+                                        
+                                TemplateCandidate[str(index)]['sum'] = TemplateCandidate[str(index)].setdefault('sum', 0) + max(TemplateCandidate[str(index)][template['key'][value]].values(), default=0)
 
-                    # select most possible template to generate sentence
-                    index, templateKeywords = sorted(TemplateCandidate.items(), key=lambda x:-x[1]['sum'])[0]
-                    del templateKeywords['sum']
-                    def generate():
-                        select = set()
-                        result = {}
+                        # select most possible template to generate sentence
+                        index, templateKeywords = sorted(TemplateCandidate.items(), key=lambda x:-x[1]['sum'])[0]
+                        del templateKeywords['sum']
+                        def generate():
+                            select = set()
+                            result = {}
 
-                        for templateKeyword, templateKeywordCandidates in sorted(templateKeywords.items(), key=lambda x:max(x[1].items(), key=lambda x:x[1])[1], reverse=True):
-                            # 最好的情況是填入template的詞不要重複
-                            # 但是真的沒辦法也只能重複填了...
-                            candidate = [templateKeywordCandidate for templateKeywordCandidate in templateKeywordCandidates.items() if templateKeywordCandidate[0] not in select]
-                            if candidate == []:
-                                candidate = [templateKeywordCandidate for templateKeywordCandidate in templateKeywordCandidates.items()]
+                            for templateKeyword, templateKeywordCandidates in sorted(templateKeywords.items(), key=lambda x:max(x[1].items(), key=lambda x:x[1])[1], reverse=True):
+                                # 最好的情況是填入template的詞不要重複
+                                # 但是真的沒辦法也只能重複填了...
+                                candidate = [templateKeywordCandidate for templateKeywordCandidate in templateKeywordCandidates.items() if templateKeywordCandidate[0] not in select]
+                                if candidate == []:
+                                    candidate = [templateKeywordCandidate for templateKeywordCandidate in templateKeywordCandidates.items()]
 
-                            # use multiple key for max
-                            # Because in some case, candidate has same similarity
-                            # so need to use key length to do max
-                            answer = max(candidate , key=lambda x:(x[1], x[0]))[0]
-                            select.add(answer)
-                            result[templateKeyword] = answer
+                                # use multiple key for max
+                                # Because in some case, candidate has same similarity
+                                # so need to use key length to do max
+                                answer = max(candidate , key=lambda x:(x[1], x[0]))[0]
+                                select.add(answer)
+                                result[templateKeyword] = answer
 
-                        # use raw data to generate sentence
-                        return ''.join(map(lambda x:result.get(x, x), self.template[int(index)]['key']))
-                    print(generate())
+                            # use raw data to generate sentence
+                            return ''.join(map(lambda x:result.get(x, x), self.template[int(index)]['key']))
+                        print(generate())
         json.dump(tfidfList, open('tfidf.json', 'w'))
 
 
@@ -169,7 +171,7 @@ class Behavior2Text(object):
                     # so need some post-processing
                     result = dict(result)
                     for keyword, count in result.setdefault('全部消歧義頁面', {}).setdefault('key', {}).items():
-                        concept = requests.post('http://udiclab.cs.nchu.edu.tw/kcem/kcemDisambiguous?keyword={}'.format(keyword), data={'docvec':json.dumps(docVec.tolist())}).json()['value']
+                        concept = requests.post('http://udiclab.cs.nchu.edu.tw/kcem/kcemContext?keyword={}'.format(keyword), data={'docvec':json.dumps(docVec.tolist())}).json()['value']
                         concept = concept[0][0] if concept else keyword
                         result.setdefault(concept, {}).setdefault('key', {})[keyword] = count
                         result[concept]['count'] = result[concept].setdefault('count', 0) + count
@@ -182,7 +184,7 @@ class Behavior2Text(object):
         json.dump(fileNameList, open(self.outputContext, 'w'))
 
 if __name__ == '__main__':
-    import sys, pyprind
+    import sys, pyprind, subprocess
     b = Behavior2Text()
 
     if sys.argv[1] == 'b':
@@ -191,3 +193,17 @@ if __name__ == '__main__':
             print(index, b.sentence(topn))
     elif sys.argv[1] == 't':
         b.tfidfSentence()
+    else:
+        for i in range(2, 9):
+            b.topNum = i
+            subprocess.call(['rm', 'result.json'])
+
+            print(i)
+            print('=============================================================')
+            print('kcem:')
+            b.buildTopn()
+            for index, topn in enumerate(json.load(open(b.output, 'r'))):
+                print(index, b.sentence(topn))
+            print('tfidf:')
+            b.tfidfSentence()
+            print('=============================================================')
