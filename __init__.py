@@ -6,28 +6,28 @@ from itertools import takewhile
 from udicOpenData.stopwords import rmsw
 
 class Behavior2Text(object):
-    def __init__(self):
+    def __init__(self, mode):
         self.template = json.load(open('template.json', 'r'))
         self.topNum = 5
         self.accessibility_log = 'goodHuman'
-        self.output = 'result.json'
+        self.mode = mode
+        self.output = '{}.json'.format(self.mode)
         self.EntityOnly = False
         # self.EntityOnly = True
 
-    @staticmethod
-    def getTopN(topList, n, mode):
-        if mode == 'kcem':
+    def getTopN(self, topList, n):
+        if self.mode == 'kcem':
             n = n if n < len(topList) else -1
             minCount = topList[n][1]['count']
             return list(takewhile(lambda x:x[1]['count'] >= minCount, topList))
-        elif mode == 'tfidf':
+        elif self.mode == 'tfidf':
             n = n if n < len(topList) else -1
             minCount = topList[n][1]
             return list(takewhile(lambda x:x[1] >= minCount, topList))
         else:
             raise Exception
 
-    def sentence(self, topn, mode):
+    def sentence(self, topn):
         def selectBestTemplate():
             TemplateCandidate = defaultdict(dict)
             for templateIndex, template in enumerate(self.template):
@@ -50,7 +50,7 @@ class Behavior2Text(object):
         index, templateKeywords = selectBestTemplate()
         del templateKeywords['sum']
 
-        def generate(topn, mode, raw=False):
+        def generate(topn, raw=False):
             select = set()
             result = {}
             for templateKeyword, templateKeywordCandidates in sorted(templateKeywords.items(), key=lambda x:max(x[1].items(), key=lambda x:x[1])[1], reverse=True):
@@ -69,12 +69,12 @@ class Behavior2Text(object):
 
 
             # use raw data to generate sentence
-            if mode == 'kcem' and raw:
+            if self.mode == 'kcem' and raw:
                 # use multiple key as the same reason above
                 topn = dict(topn)
                 result = {templateKey: max(topn[concept]['key'].items(), key=lambda x:(-x[1], x[0]))[0] for templateKey,concept in result.items()}
             return ''.join(map(lambda x:result.get(x, x), self.template[int(index)]['key']))
-        return generate(topn, mode, raw=True)
+        return generate(topn, raw=True)
 
     def buildTopn(self):
         def doc2vec(wordCount):
@@ -108,14 +108,17 @@ class Behavior2Text(object):
             tfidf = requests.post('http://udiclab.cs.nchu.edu.tw/tfidf/tfidf?flag=n', data={'doc':context}).json()
             return tfidf
 
+        def function():
+            pass
+
         if os.path.isfile(self.output):
             return
         data = []
 
         for (dir_path, dir_names, file_names) in pyprind.prog_bar(list(os.walk(self.accessibility_log))):
             for file in file_names:
-
-                context = ''.join([i['context'] for i in json.load(open(os.path.join(dir_path,file)))])
+                filePath = os.path.join(dir_path,file)
+                context = ''.join([i['context'] for i in json.load(open(filePath))])
                 wordCount = Counter(rmsw(context, 'n'))
 
                 # 如果wordCount為空
@@ -123,43 +126,23 @@ class Behavior2Text(object):
                 if not wordCount:
                     continue
 
-                data.append((kcem(wordCount), tfidf(context), os.path.join(dir_path,file)))
+                if self.mode == 'kcem':
+                    data.append((kcem(wordCount), filePath))
+                elif self.mode == 'tfidf':
+                    data.append((tfidf(context), filePath))
 
         json.dump(data, open(self.output, 'w'))
 
 if __name__ == '__main__':
     import sys, pyprind, subprocess
-    b = Behavior2Text()
+    mode = sys.argv[1]
 
-    if sys.argv[1] == 'b':
-        b.buildTopn()
-        for index, (kcemResult, tfidfResult, fileName) in enumerate(json.load(open(b.output, 'r'))):
-            kcemTopn, tfidfTopn = b.getTopN(kcemResult, b.topNum, 'kcem') if kcemResult else [], b.getTopN(tfidfResult, b.topNum, 'tfidf') if tfidfResult else []
+    b = Behavior2Text(mode)
+    b.buildTopn()
+    for index, (refineData, fileName) in enumerate(json.load(open(b.output, 'r'))):
+        topn = b.getTopN(refineData, b.topNum) if refineData else []
 
-            # for KCEM
-            if not kcemTopn:
-                print([], end=' ')
-            else:
-                print(b.sentence(kcemTopn, 'kcem'), end=' ')
-
-            # for tfidf
-            if not tfidfTopn:
-                print([])
-            else:
-                print(b.sentence(tfidfTopn, 'tfidf'))
-    # elif sys.argv[1] == 't':
-    #     b.tfidfSentence()
-    # else:
-    #     for i in range(2, 9):
-    #         b.topNum = i
-    #         subprocess.call(['rm', 'result.json'])
-
-    #         print(i)
-    #         print('=============================================================')
-    #         print('kcem:')
-    #         b.buildTopn()
-    #         for index, topn in enumerate(json.load(open(b.output, 'r'))):
-    #             print(index, b.sentence(topn, 'kcem'))
-    #         print('tfidf:')
-    #         b.tfidfSentence()
-    #         print('=============================================================')
+        if not topn:
+            print([])
+        else:
+            print(b.sentence(topn))
