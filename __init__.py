@@ -89,26 +89,27 @@ class Behavior2Text(object):
                 result = requests.post('http://udiclab.cs.nchu.edu.tw/kcem/counterKCEM?EntityOnly=true', data={'counter':json.dumps(wordCount)}).json()
             else:
                 result = requests.post('http://udiclab.cs.nchu.edu.tw/kcem/counterKCEM', data={'counter':json.dumps(wordCount)}).json()
-            def disambiguate():
-                # If result would has a key 全部消歧義頁面
-                # means result has ambiguous keywords
-                # so need some post-processing
-                nonlocal result
-                result = dict(result)
-                for keyword, count in result.setdefault('全部消歧義頁面', {}).setdefault('key', {}).items():
-                    concept = requests.post('http://udiclab.cs.nchu.edu.tw/kcem?keyword={}'.format(keyword), data={'docvec':json.dumps(docVec.tolist())}).json()['value']
-                    concept = concept[0][0] if concept else keyword
-                    result.setdefault(concept, {}).setdefault('key', {})[keyword] = count
-                    result[concept]['count'] = result[concept].setdefault('count', 0) + count
-                del result['全部消歧義頁面']
-            disambiguate()
+            result = dict(result)
+            # def disambiguate():
+            #     # If result would has a key 全部消歧義頁面
+            #     # means result has ambiguous keywords
+            #     # so need some post-processing
+            #     nonlocal result
+            #     result = dict(result)
+            #     for keyword, count in result.setdefault('全部消歧義頁面', {}).setdefault('key', {}).items():
+            #         concept = requests.post('http://udiclab.cs.nchu.edu.tw/kcem?keyword={}'.format(keyword), data={'docvec':json.dumps(docVec.tolist())}).json()['value']
+            #         concept = concept[0][0] if concept else keyword
+            #         result.setdefault(concept, {}).setdefault('key', {})[keyword] = count
+            #         result[concept]['count'] = result[concept].setdefault('count', 0) + count
+            #     del result['全部消歧義頁面']
+            # disambiguate()
             return sorted(result.items(), key=lambda x:-x[1]['count'])
 
         def tfidf(context):
             tfidf = requests.post('http://udiclab.cs.nchu.edu.tw/tfidf/tfidf?flag=n', data={'doc':context}).json()
             return tfidf
 
-        def function():
+        def hybrid():
             pass
 
         if os.path.isfile(self.output):
