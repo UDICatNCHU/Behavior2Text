@@ -85,24 +85,23 @@ class Behavior2Text(object):
 
         def kcem(wordCount):
             docVec = doc2vec(wordCount)
-            if self.EntityOnly:
-                result = requests.post('http://udiclab.cs.nchu.edu.tw/kcem/counterKCEM?EntityOnly=true', data={'counter':json.dumps(wordCount)}).json()
-            else:
-                result = requests.post('http://udiclab.cs.nchu.edu.tw/kcem/counterKCEM', data={'counter':json.dumps(wordCount)}).json()
-            result = dict(result)
-            # def disambiguate():
-            #     # If result would has a key 全部消歧義頁面
-            #     # means result has ambiguous keywords
-            #     # so need some post-processing
-            #     nonlocal result
-            #     result = dict(result)
-            #     for keyword, count in result.setdefault('全部消歧義頁面', {}).setdefault('key', {}).items():
-            #         concept = requests.post('http://udiclab.cs.nchu.edu.tw/kcem?keyword={}'.format(keyword), data={'docvec':json.dumps(docVec.tolist())}).json()['value']
-            #         concept = concept[0][0] if concept else keyword
-            #         result.setdefault(concept, {}).setdefault('key', {})[keyword] = count
-            #         result[concept]['count'] = result[concept].setdefault('count', 0) + count
-            #     del result['全部消歧義頁面']
-            # disambiguate()
+            kcemList = requests.get('http://udiclab.cs.nchu.edu.tw/kcem/kcemList?keywords={}'.format('+'.join(wordCount))).json()
+            ###doc2vec version####
+            # result = requests.post('http://udiclab.cs.nchu.edu.tw/kcem?keyword={}'.format('+'.join(wordCount)), data={'counter':json.dumps(wordCount)}).json()
+            ######################
+
+            result = defaultdict(dict)
+            for kcem in kcemList:
+                if not kcem['value']:
+                    continue
+                hypernyn = kcem['value'][0][0]
+                key = kcem['key']
+                count = wordCount[key]
+
+                # 把hypernym原始的查詢key給紀錄起來，他在文本中出現幾次也是
+                print(result, key, hypernyn, kcem)
+                result[hypernyn].setdefault('key', {}).setdefault(key, count)
+                result[hypernyn]['count'] = result[hypernyn].setdefault('count', 0) + count
             return sorted(result.items(), key=lambda x:-x[1]['count'])
 
         def tfidf(context):
