@@ -5,6 +5,7 @@ import numpy as np
 from itertools import takewhile
 from udicOpenData.stopwords import rmsw
 
+
 class Behavior2Text(object):
     def __init__(self, mode):
         self.template = json.load(open('template.json', 'r'))
@@ -15,6 +16,12 @@ class Behavior2Text(object):
         self.output = '{}.json'.format(self.mode)
         self.EntityOnly = False
         # self.EntityOnly = True
+
+        self.DEBUG = True
+        if self.DEBUG:
+            self.apiDomain = 'http://140.120.13.243'
+        else:
+            self.apiDomain = 'http://udiclab.cs.nchu.edu.tw/'
 
     @staticmethod
     def getTopN(topList, n):
@@ -31,7 +38,7 @@ class Behavior2Text(object):
 
                     for _, topnKeywordDict in topn:
                         topnKeyword = sorted(topnKeywordDict['key'].items(), key=lambda x:-x[1])[0][0]
-                        similarity = requests.get('http://udiclab.cs.nchu.edu.tw/kem/similarity?k1={}&k2={}'.format(replaceWord, topnKeyword)).json()
+                        similarity = requests.get(self.apiDomain + '/kem/similarity?k1={}&k2={}'.format(replaceWord, topnKeyword)).json()
                         if similarity == {}:
                             continue
                         TemplateCandidate[templateIndex][replaceWord][topnKeyword] = similarity['similarity']
@@ -72,19 +79,19 @@ class Behavior2Text(object):
         def doc2vec(wordCount):
             vec = np.zeros(400)
             for word, count in wordCount.items():
-                vec += np.array(requests.get('http://udiclab.cs.nchu.edu.tw/kem/vector?keyword={}'.format(word)).json()['value']) * count
+                vec += np.array(requests.get(self.apiDomain + '/kem/vector?keyword={}'.format(word)).json()['value']) * count
             return vec / sum(wordCount.values())
 
 
         def tfidf(context):
-            tfidf = requests.post('http://udiclab.cs.nchu.edu.tw/tfidf/tfidf?flag=n', data={'doc':context}).json()
+            tfidf = requests.post(self.apiDomain + '/tfidf/tfidf?flag=n', data={'doc':context}).json()
             return [(key, {'key':{key:1}, 'count':value}) for key, value in tfidf]
 
         def kcem(wordCount):
             docVec = doc2vec(wordCount)
-            kcemList = requests.get('http://udiclab.cs.nchu.edu.tw/kcem/kcemList?keywords={}'.format('+'.join(wordCount))).json()
+            kcemList = requests.get(self.apiDomain + '/kcem/kcemList?keywords={}'.format('+'.join(wordCount))).json()
             ###doc2vec version####
-            # result = requests.post('http://udiclab.cs.nchu.edu.tw/kcem?keyword={}'.format('+'.join(wordCount)), data={'counter':json.dumps(wordCount)}).json()
+            # result = requests.post(self.apiDomain + '/kcem?keyword={}'.format('+'.join(wordCount)), data={'counter':json.dumps(wordCount)}).json()
             ######################
             def countHypernym(kcemList):
                 result = defaultdict(dict)
@@ -105,17 +112,14 @@ class Behavior2Text(object):
         def kcemCluster(wordCount):
             def clustering(kcemList):
                 def simpleUnion(clusters, unionList):
-                    unionId = [clusters[i]['groupIdx'] for i in unionList]
-                    finalCluster = clusters[unionId[0]]
+                    finalCluster = clusters[unionList[0]]
                     for cluster in clusters:
-                        if cluster['groupIdx'] in unionId:
+                        if cluster['groupIdx'] in unionList:
                             finalCluster['key'].update(cluster['key'])
                             finalCluster['hypernymSet'].update(cluster['hypernymSet'])
-                    print(unionList)
-                    print('=====================')
-                    print(clusters)
-                    print('=====================')
-                    [clusters.pop(i) for i in unionList[0:]]
+                    clusters = [cluster for cluster in clusters if cluster['groupIdx'] not in unionList[0:]]
+                    for groupIdx, cluster in enumerate(clusters):
+                        cluster['groupIdx'] = groupIdx
                     return clusters
                     
                 clusters = []
@@ -130,7 +134,9 @@ class Behavior2Text(object):
 
                     insert = False
                     unionList = []
-                    for groupIdx, cluster in enumerate(clusters):
+                    for cluster in clusters:
+                        groupIdx = cluster['groupIdx']
+
                         # 除了keyword自身的hypernyms以外，keyword自身也包含在內，只要有overlap就歸在同一群
                         intersection = set(cluster['hypernymSet']).intersection(set(kcemDict))
                         if intersection:
@@ -152,7 +158,7 @@ class Behavior2Text(object):
                 return clusters
 
             docVec = doc2vec(wordCount)
-            kcemList = requests.get('http://udiclab.cs.nchu.edu.tw/kcem/kcemList?keywords={}'.format('+'.join(wordCount))).json()
+            kcemList = requests.get(self.apiDomain + '/kcem/kcemList?keywords={}'.format('+'.join(wordCount))).json()
             # sorting and format
             result = {}
             for cluster in clustering(kcemList):
