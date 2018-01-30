@@ -10,49 +10,43 @@ class Behavior2Text(object):
         self.template = json.load(open('template.json', 'r'))
         self.topNum = 5
         self.accessibility_log = 'goodHuman'
+        # self.accessibility_log = 'test'
         self.mode = mode
         self.output = '{}.json'.format(self.mode)
         self.EntityOnly = False
         # self.EntityOnly = True
 
-    def getTopN(self, topList, n):
-        if self.mode == 'kcem':
-            n = n if n < len(topList) else -1
-            minCount = topList[n][1]['count']
-            return list(takewhile(lambda x:x[1]['count'] >= minCount, topList))
-        elif self.mode == 'tfidf':
-            n = n if n < len(topList) else -1
-            minCount = topList[n][1]
-            return list(takewhile(lambda x:x[1] >= minCount, topList))
-        if self.mode == 'kcemCluster':
-            n = n if n < len(topList) else -1
-            minCount = topList[n][1]['count']
-            return list(takewhile(lambda x:x[1]['count'] >= minCount, topList))
-        else:
-            raise Exception
+    @staticmethod
+    def getTopN(topList, n):
+        n = n if n < len(topList) else -1
+        minCount = topList[n][1]['count']
+        return list(takewhile(lambda x:x[1]['count'] >= minCount, topList))
 
     def sentence(self, topn):
         def selectBestTemplate():
-            TemplateCandidate = defaultdict(dict)
-            for templateIndex, template in enumerate(self.template):
-                templateIndex = str(templateIndex)
+            def calTemplateSim(TemplateCandidate, templateIndex, template):
                 for replaceIndex in template['replaceIndices']:
                     replaceWord = template['key'][replaceIndex]
                     TemplateCandidate[templateIndex].setdefault(replaceWord, {})
 
-                    for topnKeyword, _ in topn:
+                    for _, topnKeywordDict in topn:
+                        topnKeyword = sorted(topnKeywordDict['key'].items(), key=lambda x:-x[1])[0][0]
                         similarity = requests.get('http://udiclab.cs.nchu.edu.tw/kem/similarity?k1={}&k2={}'.format(replaceWord, topnKeyword)).json()
                         if similarity == {}:
                             continue
                         TemplateCandidate[templateIndex][replaceWord][topnKeyword] = similarity['similarity']
                     TemplateCandidate[templateIndex]['sum'] = TemplateCandidate[templateIndex].setdefault('sum', 0) + max(TemplateCandidate[templateIndex][replaceWord].values(), default=0) / len(template['replaceIndices'])
 
+            TemplateCandidate = defaultdict(dict)
+            for templateIndex, template in enumerate(self.template):
+                calTemplateSim(TemplateCandidate, templateIndex, template)
+
             # select most possible template to generate sentence
             index, templateKeywords = sorted(TemplateCandidate.items(), key=lambda x:-x[1]['sum'])[0]
             del templateKeywords['sum']
             return index, templateKeywords
 
-        def generate(topn, index, templateKeywords, raw=False):
+        def generate(index, templateKeywords, raw=False):
             select = set()
             result = {}
             for templateKeyword, templateKeywordCandidates in sorted(templateKeywords.items(), key=lambda x:max(x[1].items(), key=lambda x:x[1])[1], reverse=True):
@@ -69,16 +63,10 @@ class Behavior2Text(object):
                 select.add(answer)
                 result[templateKeyword] = answer
 
-
-            # use raw data to generate sentence
-            if (self.mode == 'kcem' or self.mode == 'kcemCluster') and raw:
-                # use multiple key as the same reason above
-                topn = dict(topn)
-                result = {templateKey: max(topn[concept]['key'].items(), key=lambda x:(-x[1], x[0]))[0] for templateKey,concept in result.items()}
             return ''.join(map(lambda x:result.get(x, x), self.template[int(index)]['key']))
             
         index, templateKeywords = selectBestTemplate()
-        return generate(topn, index, templateKeywords, raw=True)
+        return generate(index, templateKeywords, raw=True)
 
     def buildTopn(self):
         def doc2vec(wordCount):
@@ -90,7 +78,7 @@ class Behavior2Text(object):
 
         def tfidf(context):
             tfidf = requests.post('http://udiclab.cs.nchu.edu.tw/tfidf/tfidf?flag=n', data={'doc':context}).json()
-            return tfidf
+            return [(key, {'key':{key:1}, 'count':value}) for key, value in tfidf]
 
         def kcem(wordCount):
             docVec = doc2vec(wordCount)
@@ -116,8 +104,19 @@ class Behavior2Text(object):
 
         def kcemCluster(wordCount):
             def clustering(kcemList):
-                def union():
-                    pass
+                def simpleUnion(clusters, unionList):
+                    unionId = [clusters[i]['groupIdx'] for i in unionList]
+                    finalCluster = clusters[unionId[0]]
+                    for cluster in clusters:
+                        if cluster['groupIdx'] in unionId:
+                            finalCluster['key'].update(cluster['key'])
+                            finalCluster['hypernymSet'].update(cluster['hypernymSet'])
+                    print(unionList)
+                    print('=====================')
+                    print(clusters)
+                    print('=====================')
+                    [clusters.pop(i) for i in unionList[0:]]
+                    return clusters
                     
                 clusters = []
                 for kcem in kcemList:
@@ -130,11 +129,13 @@ class Behavior2Text(object):
                     kcemDict = dict({originKcemKey:termFrequency}, **{hypernym:termFrequency for hypernym, possibility in kcem['value']})
 
                     insert = False
-                    for cluster in clusters:
+                    unionList = []
+                    for groupIdx, cluster in enumerate(clusters):
                         # 除了keyword自身的hypernyms以外，keyword自身也包含在內，只要有overlap就歸在同一群
                         intersection = set(cluster['hypernymSet']).intersection(set(kcemDict))
                         if intersection:
                             insert = True
+                            unionList.append(groupIdx)
 
                             cluster['key'].update({originKcemKey:termFrequency})
                             for hypernym in kcemDict:
@@ -142,7 +143,12 @@ class Behavior2Text(object):
 
                     if not insert:
                         # 要注意，因為kcem有套用ngram搜尋，所以kcem的key是可能會重複的喔!!!
-                        clusters.append({'key':{originKcemKey:termFrequency}, 'hypernymSet':kcemDict})
+                        clusters.append({'key':{originKcemKey:termFrequency}, 'hypernymSet':kcemDict, 'groupIdx':len(clusters)})
+                    else:
+                        # 如果有insert過，就要判斷是否需要union
+                        if len(unionList) >= 2:
+                            clusters = simpleUnion(clusters, unionList)
+
                 return clusters
 
             docVec = doc2vec(wordCount)
