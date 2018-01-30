@@ -9,7 +9,7 @@ from udicOpenData.stopwords import rmsw
 class Behavior2Text(object):
     def __init__(self, mode):
         self.template = json.load(open('template.json', 'r'))
-        self.topNum = 5
+        self.topNum = 3
         self.accessibility_log = 'goodHuman'
         # self.accessibility_log = 'test'
         self.mode = mode
@@ -117,7 +117,7 @@ class Behavior2Text(object):
                         if cluster['groupIdx'] in unionList:
                             finalCluster['key'].update(cluster['key'])
                             finalCluster['hypernymSet'].update(cluster['hypernymSet'])
-                    clusters = [cluster for cluster in clusters if cluster['groupIdx'] not in unionList[0:]]
+                    clusters = [cluster for cluster in clusters if cluster['groupIdx'] not in unionList[0:]] + [finalCluster]
                     for groupIdx, cluster in enumerate(clusters):
                         cluster['groupIdx'] = groupIdx
                     return clusters
