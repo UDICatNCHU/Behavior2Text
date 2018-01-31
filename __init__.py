@@ -26,9 +26,12 @@ class Behavior2Text(object):
     @staticmethod
     def getTopN(topList, n):
         n = n if n < len(topList) else -1
-        # minCount = topList[n][1]['count']
-        # return list(takewhile(lambda x:x[1]['count'] >= minCount, topList))
-        return topList[:n]
+        minCount = topList[n][1]['count']
+
+        # 取到count數字不小於topN的topK，舉例來說：如果取top3，而第3個element的count是10，第4、5的count也都是10
+        # 第6個element的count是9，則就取到第5個element
+        # 再來檢查top5有沒有dictionary裏面的value是0的（tfidf or kcem的分數是0），是就剔除掉
+        return [(hypernym, dictionary) for hypernym, dictionary in takewhile(lambda x:x[1]['count'] >= minCount, topList) if max(dictionary['key'].values(), key=lambda x:x) != 0][:n]
 
     def sentence(self, topn):
         def selectBestTemplate():
@@ -41,7 +44,7 @@ class Behavior2Text(object):
                         topnKeyword = sorted(topnKeywordDict['key'].items(), key=lambda x:-x[1])[0][0]
                         similarity = requests.get(self.apiDomain + '/kem/similarity?k1={}&k2={}'.format(replaceWord, topnKeyword)).json()
                         if similarity == {}:
-                            continue
+                            similarity['similarity'] = 0
                         TemplateCandidate[templateIndex][replaceWord][topnKeyword] = similarity['similarity']
                     TemplateCandidate[templateIndex]['sum'] = TemplateCandidate[templateIndex].setdefault('sum', 0) + max(TemplateCandidate[templateIndex][replaceWord].values(), default=0) / len(template['replaceIndices'])
 
@@ -170,16 +173,12 @@ class Behavior2Text(object):
 
         def hybrid(wordCount, context):
             tfidfDict = dict(requests.post(self.apiDomain + '/tfidf/tfidf?flag=n', data={'doc':context}).json())
-
-            def harmonic_mean(term, tfNormalized):
-                return 2 * tfNormalized * tfidfDict[term] / (tfNormalized + tfidfDict[term])
-
             result = kcemCluster(wordCount)
             for hypernym, dictionary in result:
                 total = dictionary['count']
                 for term, tf in dictionary['key'].items():
                     dictionary['key'][term] = tfidfDict.get(term, 0)
-            return result
+            return sorted(result, key=lambda x:(-x[1]['count'], -max(x[1]['key'].values(), key=lambda y:y)))
 
         if os.path.isfile(self.output):
             return
