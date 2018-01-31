@@ -26,8 +26,9 @@ class Behavior2Text(object):
     @staticmethod
     def getTopN(topList, n):
         n = n if n < len(topList) else -1
-        minCount = topList[n][1]['count']
-        return list(takewhile(lambda x:x[1]['count'] >= minCount, topList))
+        # minCount = topList[n][1]['count']
+        # return list(takewhile(lambda x:x[1]['count'] >= minCount, topList))
+        return topList[:n]
 
     def sentence(self, topn):
         def selectBestTemplate():
@@ -167,8 +168,18 @@ class Behavior2Text(object):
                 result[cluster['hypernym']]['count'] = sum([wordCount[k] for k in cluster['key']])
             return sorted(result.items(), key=lambda x:-x[1]['count'])
 
-        def hybrid():
-            pass
+        def hybrid(wordCount, context):
+            tfidfDict = dict(requests.post(self.apiDomain + '/tfidf/tfidf?flag=n', data={'doc':context}).json())
+
+            def harmonic_mean(term, tfNormalized):
+                return 2 * tfNormalized * tfidfDict[term] / (tfNormalized + tfidfDict[term])
+
+            result = kcemCluster(wordCount)
+            for hypernym, dictionary in result:
+                total = dictionary['count']
+                for term, tf in dictionary['key'].items():
+                    dictionary['key'][term] = tfidfDict.get(term, 0)
+            return result
 
         if os.path.isfile(self.output):
             return
@@ -191,6 +202,8 @@ class Behavior2Text(object):
                     data.append((tfidf(context), filePath))
                 elif self.mode == 'kcemCluster':
                     data.append((kcemCluster(wordCount), filePath))
+                elif self.mode == 'hybrid':
+                    data.append((hybrid(wordCount, context), filePath))
 
         json.dump(data, open(self.output, 'w'))
 
