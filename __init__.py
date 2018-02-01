@@ -10,8 +10,8 @@ class Behavior2Text(object):
     def __init__(self, mode):
         self.template = json.load(open('template.json', 'r'))
         self.topNum = 3
-        self.accessibility_log = 'goodHuman'
-        # self.accessibility_log = 'test'
+        # self.accessibility_log = 'goodHuman'
+        self.accessibility_log = 'test'
         self.mode = mode
         self.output = '{}.json'.format(self.mode)
         self.EntityOnly = False
@@ -174,11 +174,22 @@ class Behavior2Text(object):
         def hybrid(wordCount, context):
             tfidfDict = dict(requests.post(self.apiDomain + '/tfidf/tfidf?flag=n', data={'doc':context}).json())
             result = kcemCluster(wordCount)
+
+            refinedResult = []
             for hypernym, dictionary in result:
-                total = dictionary['count']
+                delList = []
                 for term, tf in dictionary['key'].items():
-                    dictionary['key'][term] = tfidfDict.get(term, 0)
-            return sorted(result, key=lambda x:(-x[1]['count'], -max(x[1]['key'].values(), key=lambda y:y)))
+                    value = tfidfDict.get(term, 0)
+                    if not value:
+                        delList.append(term)
+                    else:
+                        dictionary['key'][term] = value
+                for term in delList:
+                    del dictionary['key'][term]
+
+                if dictionary['key']:
+                    refinedResult.append((hypernym, dictionary))
+            return sorted(refinedResult, key=lambda x:(-x[1]['count'], -max(x[1]['key'].values(), key=lambda y:y, default=0)))
 
         if os.path.isfile(self.output):
             return
