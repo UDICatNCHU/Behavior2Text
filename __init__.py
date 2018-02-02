@@ -10,18 +10,21 @@ class Behavior2Text(object):
     def __init__(self, mode):
         self.template = json.load(open('template.json', 'r'))
         self.topNum = 3
-        # self.accessibility_log = 'goodHuman'
-        self.accessibility_log = 'test'
+        self.accessibility_log = 'goodHuman'
+        # self.accessibility_log = 'test'
         self.mode = mode
         self.output = '{}.json'.format(self.mode)
         self.EntityOnly = False
         # self.EntityOnly = True
+        self.label = json.load(open('label.json', 'r'))
 
         self.DEBUG = True
         if self.DEBUG:
             self.apiDomain = 'http://140.120.13.243'
         else:
             self.apiDomain = 'http://udiclab.cs.nchu.edu.tw/'
+
+        self.NDCG = 0
 
     @staticmethod
     def getTopN(topList, n):
@@ -33,7 +36,7 @@ class Behavior2Text(object):
         # 再來檢查top5有沒有dictionary裏面的value是0的（tfidf or kcem的分數是0），是就剔除掉
         return [(hypernym, dictionary) for hypernym, dictionary in takewhile(lambda x:x[1]['count'] >= minCount, topList) if max(dictionary['key'].values(), key=lambda x:x) != 0][:n]
 
-    def sentence(self, topn):
+    def sentence(self, topn, fileName):
         def selectBestTemplate():
             def calTemplateSim(TemplateCandidate, templateIndex, template):
                 for replaceIndex in template['replaceIndices']:
@@ -58,6 +61,27 @@ class Behavior2Text(object):
             return index, templateKeywords
 
         def generate(index, templateKeywords, raw=False):
+            def benchmark(result, keys):
+                # get NDCG label data
+                for i in self.label:
+                    if i['file'] == fileName:
+                        NDCG_labelData = i
+                        summarization = 0
+                        pointer = 1
+                        maxpointer = int(max([i for i in NDCG_labelData if i.isdigit()], key=lambda x:x))
+                        NDCG_sum = sum(sorted(NDCG_labelData[str(i)].values(), key=lambda x:-x)[0] for i in range(1, maxpointer+1))
+                        break
+
+                print('==============================')
+                print(NDCG_sum, fileName)
+                for key in keys:
+                    if key in result:
+                        summarization += NDCG_labelData[str(pointer)].get(result[key], 1)
+                        if pointer == maxpointer:
+                            break
+                        pointer += 1
+                return summarization/NDCG_sum
+
             select = set()
             result = {}
             for templateKeyword, templateKeywordCandidates in sorted(templateKeywords.items(), key=lambda x:max(x[1].items(), key=lambda x:x[1])[1], reverse=True):
@@ -74,6 +98,11 @@ class Behavior2Text(object):
                 select.add(answer)
                 result[templateKeyword] = answer
 
+            summarization = benchmark(result, self.template[int(index)]['key'])
+            self.NDCG += summarization
+            print('======================')
+            print(summarization)
+            print('======================')
             return ''.join(map(lambda x:result.get(x, x), self.template[int(index)]['key']))
             
         index, templateKeywords = selectBestTemplate()
@@ -215,7 +244,7 @@ class Behavior2Text(object):
                 elif self.mode == 'hybrid':
                     data.append((hybrid(wordCount, context), filePath))
 
-        json.dump(data, open(self.output, 'w'))
+        json.dump(data, open(self.output, 'w'))        
 
 if __name__ == '__main__':
     import sys, pyprind, subprocess
@@ -223,10 +252,12 @@ if __name__ == '__main__':
 
     b = Behavior2Text(mode)
     b.buildTopn()
-    for index, (refineData, fileName) in enumerate(json.load(open(b.output, 'r'))):
+    topnsFile = json.load(open(b.output, 'r'))
+    for refineData, fileName in topnsFile:
         topn = b.getTopN(refineData, b.topNum) if refineData else []
 
         if not topn:
             print([])
         else:
-            print(b.sentence(topn))
+            print(b.sentence(topn, fileName))
+    print('NDCG is {}'.format(b.NDCG/len(topnsFile)))
