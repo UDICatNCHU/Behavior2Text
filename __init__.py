@@ -83,22 +83,30 @@ class Behavior2Text(object):
                         NDCG_labelData = i
                         break
 
-                NDCG, count = 0, 0
+                NDCG = 0
                 for labelDataIndex, replaceIndex in enumerate(template["replaceIndices"]):
                     replaceWord = template['key'][replaceIndex]
+
                     if len(answerTable[replaceWord]) and str(labelDataIndex) in NDCG_labelData:
                         DCG = sum([(2**NDCG_labelData[str(labelDataIndex)].get(candidate, 0) - 1) / math.log(1+candidateIndex, 2) for candidateIndex, (candidate, value) in enumerate(answerTable[replaceWord], start=1)])
                         DCG_best = sum([(2**sorted(NDCG_labelData[str(labelDataIndex)].items(), key=lambda x:-x[1])[candidateIndex-1][1] - 1) / math.log(1+candidateIndex, 2) for candidateIndex in range(1, min(len(answerTable[replaceWord]), len(NDCG_labelData[str(labelDataIndex)]))+1)])
                         NDCG += DCG / DCG_best
-                    count += 1
-                print(NDCG / count)
-                return NDCG / count
+
+                # len(template["replaceIndices"]) means how many blank we need to fill in this template
+                # in each iteration, we'll calculate out a DCG / DCG_best, this is only a NDCG for a blank
+                # and we need the NDCG for a sentence, so calculate the average need to divide with len(template["replaceIndices"]), aka blanks we have in this template.
+                return NDCG / len(template["replaceIndices"])
 
             answerTable = {}
             for templateKeyword, templateKeywordCandidateDict in templateKeywords.items():
-                answerTable[templateKeyword] = sorted(templateKeywordCandidateDict.items(), key=lambda x:-x[1])
-            self.NDCG += NDCG(answerTable, self.template[int(index)])
-            return ''.join(map(lambda x:answerTable.get(x, x)[0][0] if type(answerTable.get(x, x)) == list and len(answerTable.get(x, x)) else x, self.template[int(index)]['key']))
+                if not templateKeywordCandidateDict:
+                    answerTable[templateKeyword] = [['', 0]]
+                else:
+                    answerTable[templateKeyword] = sorted(templateKeywordCandidateDict.items(), key=lambda x:-x[1])
+
+            ndcg_this_sentence = NDCG(answerTable, self.template[int(index)])
+            self.NDCG += ndcg_this_sentence
+            return ''.join(map(lambda x:answerTable.get(x, x)[0][0] if type(answerTable.get(x, x)) == list and len(answerTable.get(x, x)) else x, self.template[int(index)]['key'])), ndcg_this_sentence
             
         index, templateKeywords = selectBestTemplate()
         return generate(index, templateKeywords, raw=True)
