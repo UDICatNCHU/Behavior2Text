@@ -1,10 +1,9 @@
-import requests, os, json, threading
+import requests, os, json, threading, copy, math
 from collections import defaultdict, Counter
 from scipy import spatial
 import numpy as np
 from itertools import takewhile
 from udicOpenData.stopwords import rmsw
-
 
 class Behavior2Text(object):
     def __init__(self, mode):
@@ -44,11 +43,13 @@ class Behavior2Text(object):
                     TemplateCandidate[templateIndex].setdefault(replaceWord, {})
 
                     for _, topnKeywordDict in topn:
-                        topnKeyword = sorted(topnKeywordDict['key'].items(), key=lambda x:-x[1])[0][0]
-                        similarity = requests.get(self.apiDomain + '/kem/similarity?k1={}&k2={}'.format(replaceWord, topnKeyword)).json()
-                        if similarity == {}:
-                            similarity['similarity'] = 0
-                        TemplateCandidate[templateIndex][replaceWord][topnKeyword] = similarity['similarity']
+                        # 這邊的7是因為label.json最高會給到7個relevence的資料，所以就統一取7個，然後配合不同context決定 這比ndcg要比到top幾的relevence
+                        topnKeywords = (x[0] for x in sorted(topnKeywordDict['key'].items(), key=lambda x:-x[1])[:3])
+                        for topnKeyword in topnKeywords:
+                            similarity = requests.get(self.apiDomain + '/kem/similarity?k1={}&k2={}'.format(replaceWord, topnKeyword)).json()
+                            if similarity == {}:
+                                similarity['similarity'] = 0
+                            TemplateCandidate[templateIndex][replaceWord][topnKeyword] = similarity['similarity']
                     TemplateCandidate[templateIndex]['sum'] = TemplateCandidate[templateIndex].setdefault('sum', 0) + max(TemplateCandidate[templateIndex][replaceWord].values(), default=0) / len(template['replaceIndices'])
 
             TemplateCandidate = defaultdict(dict)
@@ -58,52 +59,46 @@ class Behavior2Text(object):
             # select most possible template to generate sentence
             index, templateKeywords = sorted(TemplateCandidate.items(), key=lambda x:-x[1]['sum'])[0]
             del templateKeywords['sum']
-            return index, templateKeywords
+
+            # refine to ndcg format
+            finalTemplateKeywords = copy.deepcopy(templateKeywords)
+            replaceWordList = list(templateKeywords.keys())
+            for candidate in templateKeywords[replaceWordList[0]]:
+                reserveKey, maxSim = '', 0
+                for replaceWord in replaceWordList:
+                    if templateKeywords[replaceWord][candidate] > maxSim:
+                        maxSim = templateKeywords[replaceWord][candidate]
+                        reserveKey = replaceWord
+
+                for delKey in [i for i in replaceWordList if i != reserveKey]:
+                    del finalTemplateKeywords[delKey][candidate]
+
+            return index, finalTemplateKeywords
 
         def generate(index, templateKeywords, raw=False):
-            def benchmark(result, keys):
+            def NDCG(answerTable, template):
                 # get NDCG label data
                 for i in self.label:
                     if i['file'] == fileName:
                         NDCG_labelData = i
-                        summarization = 0
-                        pointer = 1
-                        maxpointer = int(max([i for i in NDCG_labelData if i.isdigit()], key=lambda x:x))
-                        NDCG_sum = sum(sorted(NDCG_labelData[str(i)].values(), key=lambda x:-x)[0] for i in range(1, maxpointer+1))
                         break
 
-                print('==============================')
-                print(NDCG_sum, fileName)
-                for key in keys:
-                    if key in result:
-                        summarization += NDCG_labelData[str(pointer)].get(result[key], 1)
-                        if pointer == maxpointer:
-                            break
-                        pointer += 1
-                return summarization/NDCG_sum
+                NDCG, count = 0, 0
+                for labelDataIndex, replaceIndex in enumerate(template["replaceIndices"]):
+                    replaceWord = template['key'][replaceIndex]
+                    if len(answerTable[replaceWord]) and str(labelDataIndex) in NDCG_labelData:
+                        DCG = sum([(2**NDCG_labelData[str(labelDataIndex)].get(candidate, 0) - 1) / math.log(1+candidateIndex, 2) for candidateIndex, (candidate, value) in enumerate(answerTable[replaceWord], start=1)])
+                        DCG_best = sum([(2**sorted(NDCG_labelData[str(labelDataIndex)].items(), key=lambda x:-x[1])[candidateIndex-1][1] - 1) / math.log(1+candidateIndex, 2) for candidateIndex in range(1, min(len(answerTable[replaceWord]), len(NDCG_labelData[str(labelDataIndex)]))+1)])
+                        NDCG += DCG / DCG_best
+                    count += 1
+                print(NDCG / count)
+                return NDCG / count
 
-            select = set()
-            result = {}
-            for templateKeyword, templateKeywordCandidates in sorted(templateKeywords.items(), key=lambda x:max(x[1].items(), key=lambda x:x[1])[1], reverse=True):
-                # 最好的情況是填入template的詞不要重複
-                # 但是真的沒辦法也只能重複填了...
-                candidate = [(templateKeywordCandidate, similarity) for templateKeywordCandidate, similarity in templateKeywordCandidates.items() if templateKeywordCandidate not in select]
-                if candidate == []:
-                    candidate = [(templateKeywordCandidate, similarity) for templateKeywordCandidate, similarity in templateKeywordCandidates.items()]
-
-                # use multiple key for max
-                # Because in some case, candidate has same similarity
-                # so need to use key length to do max
-                answer = max(candidate , key=lambda x:(x[1], x[0]))[0]
-                select.add(answer)
-                result[templateKeyword] = answer
-
-            summarization = benchmark(result, self.template[int(index)]['key'])
-            self.NDCG += summarization
-            print('======================')
-            print(summarization)
-            print('======================')
-            return ''.join(map(lambda x:result.get(x, x), self.template[int(index)]['key']))
+            answerTable = {}
+            for templateKeyword, templateKeywordCandidateDict in templateKeywords.items():
+                answerTable[templateKeyword] = sorted(templateKeywordCandidateDict.items(), key=lambda x:-x[1])
+            self.NDCG += NDCG(answerTable, self.template[int(index)])
+            return ''.join(map(lambda x:answerTable.get(x, x)[0][0] if type(answerTable.get(x, x)) == list and len(answerTable.get(x, x)) else x, self.template[int(index)]['key']))
             
         index, templateKeywords = selectBestTemplate()
         return generate(index, templateKeywords, raw=True)
