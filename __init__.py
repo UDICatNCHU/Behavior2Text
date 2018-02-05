@@ -164,6 +164,7 @@ class Behavior2Text(object):
                     if not kcem['value']:
                         continue
 
+                    # union的條件是keyword自身以及hypernym有intersection就union
                     originKcemKey = kcem['origin']
                     termFrequency = wordCount[originKcemKey]
                     kcemDict = dict({originKcemKey:termFrequency}, **{hypernym:termFrequency for hypernym, possibility in kcem['value']})
@@ -223,6 +224,64 @@ class Behavior2Text(object):
                     refinedResult.append((hypernym, dictionary))
             return sorted(refinedResult, key=lambda x:(-x[1]['count'], -max(x[1]['key'].values(), key=lambda y:y, default=0)))
 
+        def contextNetwork(wordCount):
+            def clustering(kcemList):
+                def simpleUnion(clusters, unionList):
+                    finalCluster = clusters[unionList[0]]
+                    for cluster in clusters:
+                        if cluster['groupIdx'] in unionList:
+                            finalCluster['key'].update(cluster['key'])
+                            finalCluster['hypernymSet'].update(cluster['hypernymSet'])
+                    clusters = [cluster for cluster in clusters if cluster['groupIdx'] not in unionList[0:]] + [finalCluster]
+                    for groupIdx, cluster in enumerate(clusters):
+                        cluster['groupIdx'] = groupIdx
+                    return clusters
+                    
+                clusters = []
+                for kcem in kcemList:
+                    # kcem最頂端的keyword是沒有hypernym的，其他太爛的字也沒有
+                    if not kcem['value']:
+                        continue
+
+                    # union的條件是keyword自身以及hypernym有intersection就union
+                    originKcemKey = kcem['origin']
+                    kcemDict = dict({originKcemKey:1}, **{hypernym:1 for hypernym, possibility in kcem['value']})
+
+                    insert = False
+                    unionList = []
+                    for cluster in clusters:
+                        groupIdx = cluster['groupIdx']
+
+                        # 除了keyword自身的hypernyms以外，keyword自身也包含在內，只要有overlap就歸在同一群
+                        intersection = set(cluster['hypernymSet']).intersection(set(kcemDict))
+                        if intersection:
+                            insert = True
+                            unionList.append(groupIdx)
+
+                            cluster['key'].update({originKcemKey:1})
+                            for hypernym in kcemDict:
+                                cluster['hypernymSet'][hypernym] = cluster['hypernymSet'].setdefault(hypernym, 0) + 1
+
+                    if not insert:
+                        # 要注意，因為kcem有套用ngram搜尋，所以kcem的key是可能會重複的喔!!!
+                        clusters.append({'key':{originKcemKey:1}, 'hypernymSet':kcemDict, 'groupIdx':len(clusters)})
+                    else:
+                        # 如果有insert過，就要判斷是否需要union
+                        if len(unionList) >= 2:
+                            clusters = simpleUnion(clusters, unionList)
+
+                return clusters
+
+            docVec = doc2vec(wordCount)
+            kcemList = requests.get(self.apiDomain + '/kcem/kcemList?keywords={}'.format('+'.join(wordCount))).json()
+            # sorting and format
+            result = {}
+            for cluster in clustering(kcemList):
+                cluster['hypernym'] = sorted(cluster['hypernymSet'].items(), key=lambda x:-x[1])[0][0]
+                result[cluster['hypernym']] = {'key':{k:wordCount[k] for k in cluster['key']}}
+                result[cluster['hypernym']]['count'] = sum([wordCount[k] for k in cluster['key']])
+            return sorted(result.items(), key=lambda x:-x[1]['count'])
+
         if os.path.isfile(self.output):
             return
         data = []
@@ -246,6 +305,8 @@ class Behavior2Text(object):
                     data.append((kcemCluster(wordCount), filePath))
                 elif self.mode == 'hybrid':
                     data.append((hybrid(wordCount, context), filePath))
+                elif self.mode == 'contextNetwork':
+                    data.append((contextNetwork(wordCount), filePath))
 
         json.dump(data, open(self.output, 'w'))        
 
