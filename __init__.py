@@ -95,18 +95,18 @@ class Behavior2Text(object):
                 # len(template["replaceIndices"]) means how many blank we need to fill in this template
                 # in each iteration, we'll calculate out a DCG / DCG_best, this is only a NDCG for a blank
                 # and we need the NDCG for a sentence, so calculate the average need to divide with len(template["replaceIndices"]), aka blanks we have in this template.
-                return NDCG / len(template["replaceIndices"])
+                return NDCG / len(template["replaceIndices"]), NDCG_labelData
 
             answerTable = {}
             for templateKeyword, templateKeywordCandidateDict in templateKeywords.items():
                 if not templateKeywordCandidateDict:
-                    answerTable[templateKeyword] = [['', 0]]
+                    answerTable[templateKeyword] = [['X', 0]]
                 else:
                     answerTable[templateKeyword] = sorted(templateKeywordCandidateDict.items(), key=lambda x:-x[1])
 
-            ndcg_this_sentence = NDCG(answerTable, self.template[int(index)])
+            ndcg_this_sentence, NDCG_labelData = NDCG(answerTable, self.template[int(index)])
             self.NDCG += ndcg_this_sentence
-            return ''.join(map(lambda x:answerTable.get(x, x)[0][0] if type(answerTable.get(x, x)) == list and len(answerTable.get(x, x)) else x, self.template[int(index)]['key'])), ndcg_this_sentence
+            return ''.join(map(lambda x:answerTable.get(x, x)[0][0] if type(answerTable.get(x, x)) == list and len(answerTable.get(x, x)) else x, self.template[int(index)]['key'])), ndcg_this_sentence, NDCG_labelData, self.template[int(index)]
             
         index, templateKeywords = selectBestTemplate()
         return generate(index, templateKeywords, raw=True)
