@@ -89,9 +89,10 @@ class Behavior2Text(object):
 
                     if len(answerTable[replaceWord]) and str(labelDataIndex) in NDCG_labelData:
 
-                        # 因為labelData和answerTable排出來的ranking會不一樣長，所以每次比較要取兩者長度的min，只比較到雙方最短 長度為止
-                        minLength = min(len(answerTable[replaceWord]), len(NDCG_labelData[str(labelDataIndex)]))
-                        DCG = sum([(2**NDCG_labelData[str(labelDataIndex)].get(candidate, 0) - 1) / math.log(1+candidateIndex, 2) for candidateIndex, (candidate, value) in enumerate(answerTable[replaceWord], start=1) if candidateIndex < minLength])
+                        # 不管answerTable給了幾個candidate,答案我排幾個ndcg就要計 算到幾個，answerTable數量不夠的就是都拿零分
+                        minLength = len(NDCG_labelData[str(labelDataIndex)])
+                        answerTable[replaceWord] = answerTable[replaceWord][:minLength] if len(answerTable[replaceWord]) >= minLength else answerTable[replaceWord] + [['', 0] for _ in range(minLength-len(answerTable[replaceWord]))]
+                        DCG = sum([(2**NDCG_labelData[str(labelDataIndex)].get(candidate, 0) - 1) / math.log(1+candidateIndex, 2) for candidateIndex, (candidate, value) in enumerate(answerTable[replaceWord], start=1)])
                         DCG_best = sum([(2**sorted(NDCG_labelData[str(labelDataIndex)].items(), key=lambda x:-x[1])[candidateIndex-1][1] - 1) / math.log(1+candidateIndex, 2) for candidateIndex in range(1, minLength+1)])
                         NDCG += DCG / DCG_best
 
