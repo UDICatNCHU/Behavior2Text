@@ -9,6 +9,7 @@ class Behavior2Text(object):
     def __init__(self, mode):
         self.template = json.load(open('template.json', 'r'))
         self.topNum = 3
+        self.topnKeywordNum = 3
         self.accessibility_log = 'goodHuman'
         # self.accessibility_log = 'test'
         self.mode = mode
@@ -43,8 +44,8 @@ class Behavior2Text(object):
                     TemplateCandidate[templateIndex].setdefault(replaceWord, {})
 
                     for _, topnKeywordDict in topn:
-                        # 這邊的7是因為label.json最高會給到7個relevence的資料，所以就統一取7個，然後配合不同context決定 這比ndcg要比到top幾的relevence
-                        topnKeywords = (x[0] for x in sorted(topnKeywordDict['key'].items(), key=lambda x:-x[1])[:3])
+                        # 這邊的self.topnKeywordNum是這筆log要比到top幾的relevence candidate keywords
+                        topnKeywords = (x[0] for x in sorted(topnKeywordDict['key'].items(), key=lambda x:-x[1])[:self.topnKeywordNum])
                         for topnKeyword in topnKeywords:
                             similarity = requests.get(self.apiDomain + '/kem/similarity?k1={}&k2={}'.format(replaceWord, topnKeyword)).json()
                             if similarity == {}:
@@ -82,14 +83,16 @@ class Behavior2Text(object):
                     if i['file'] == fileName:
                         NDCG_labelData = i
                         break
-
                 NDCG = 0
                 for labelDataIndex, replaceIndex in enumerate(template["replaceIndices"]):
                     replaceWord = template['key'][replaceIndex]
 
                     if len(answerTable[replaceWord]) and str(labelDataIndex) in NDCG_labelData:
-                        DCG = sum([(2**NDCG_labelData[str(labelDataIndex)].get(candidate, 0) - 1) / math.log(1+candidateIndex, 2) for candidateIndex, (candidate, value) in enumerate(answerTable[replaceWord], start=1)])
-                        DCG_best = sum([(2**sorted(NDCG_labelData[str(labelDataIndex)].items(), key=lambda x:-x[1])[candidateIndex-1][1] - 1) / math.log(1+candidateIndex, 2) for candidateIndex in range(1, min(len(answerTable[replaceWord]), len(NDCG_labelData[str(labelDataIndex)]))+1)])
+
+                        # 因為labelData和answerTable排出來的ranking會不一樣長，所以每次比較要取兩者長度的min，只比較到雙方最短 長度為止
+                        minLength = min(len(answerTable[replaceWord]), len(NDCG_labelData[str(labelDataIndex)]))
+                        DCG = sum([(2**NDCG_labelData[str(labelDataIndex)].get(candidate, 0) - 1) / math.log(1+candidateIndex, 2) for candidateIndex, (candidate, value) in enumerate(answerTable[replaceWord], start=1) if candidateIndex < minLength])
+                        DCG_best = sum([(2**sorted(NDCG_labelData[str(labelDataIndex)].items(), key=lambda x:-x[1])[candidateIndex-1][1] - 1) / math.log(1+candidateIndex, 2) for candidateIndex in range(1, minLength+1)])
                         NDCG += DCG / DCG_best
 
                 # len(template["replaceIndices"]) means how many blank we need to fill in this template
@@ -223,64 +226,6 @@ class Behavior2Text(object):
                 if dictionary['key']:
                     refinedResult.append((hypernym, dictionary))
             return sorted(refinedResult, key=lambda x:(-x[1]['count'], -max(x[1]['key'].values(), key=lambda y:y, default=0)))
-
-        def contextNetwork(wordCount):
-            def clustering(kcemList):
-                def simpleUnion(clusters, unionList):
-                    finalCluster = clusters[unionList[0]]
-                    for cluster in clusters:
-                        if cluster['groupIdx'] in unionList:
-                            finalCluster['key'].update(cluster['key'])
-                            finalCluster['hypernymSet'].update(cluster['hypernymSet'])
-                    clusters = [cluster for cluster in clusters if cluster['groupIdx'] not in unionList[0:]] + [finalCluster]
-                    for groupIdx, cluster in enumerate(clusters):
-                        cluster['groupIdx'] = groupIdx
-                    return clusters
-                    
-                clusters = []
-                for kcem in kcemList:
-                    # kcem最頂端的keyword是沒有hypernym的，其他太爛的字也沒有
-                    if not kcem['value']:
-                        continue
-
-                    # union的條件是keyword自身以及hypernym有intersection就union
-                    originKcemKey = kcem['origin']
-                    kcemDict = dict({originKcemKey:1}, **{hypernym:1 for hypernym, possibility in kcem['value']})
-
-                    insert = False
-                    unionList = []
-                    for cluster in clusters:
-                        groupIdx = cluster['groupIdx']
-
-                        # 除了keyword自身的hypernyms以外，keyword自身也包含在內，只要有overlap就歸在同一群
-                        intersection = set(cluster['hypernymSet']).intersection(set(kcemDict))
-                        if intersection:
-                            insert = True
-                            unionList.append(groupIdx)
-
-                            cluster['key'].update({originKcemKey:1})
-                            for hypernym in kcemDict:
-                                cluster['hypernymSet'][hypernym] = cluster['hypernymSet'].setdefault(hypernym, 0) + 1
-
-                    if not insert:
-                        # 要注意，因為kcem有套用ngram搜尋，所以kcem的key是可能會重複的喔!!!
-                        clusters.append({'key':{originKcemKey:1}, 'hypernymSet':kcemDict, 'groupIdx':len(clusters)})
-                    else:
-                        # 如果有insert過，就要判斷是否需要union
-                        if len(unionList) >= 2:
-                            clusters = simpleUnion(clusters, unionList)
-
-                return clusters
-
-            docVec = doc2vec(wordCount)
-            kcemList = requests.get(self.apiDomain + '/kcem/kcemList?keywords={}'.format('+'.join(wordCount))).json()
-            # sorting and format
-            result = {}
-            for cluster in clustering(kcemList):
-                cluster['hypernym'] = sorted(cluster['hypernymSet'].items(), key=lambda x:-x[1])[0][0]
-                result[cluster['hypernym']] = {'key':{k:wordCount[k] for k in cluster['key']}}
-                result[cluster['hypernym']]['count'] = sum([wordCount[k] for k in cluster['key']])
-            return sorted(result.items(), key=lambda x:-x[1]['count'])
 
         if os.path.isfile(self.output):
             return
