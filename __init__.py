@@ -1,4 +1,4 @@
-import requests, os, json, threading, copy, math
+import requests, os, json, threading, copy, math, pyprind
 from collections import defaultdict, Counter
 from scipy import spatial
 from itertools import takewhile
@@ -150,7 +150,7 @@ class Behavior2Text(object):
         json.dump(data, open(self.output, 'w'))        
 
 if __name__ == '__main__':
-    import sys, pyprind, subprocess
+    import sys, subprocess
     mode = sys.argv[1]
 
     b = Behavior2Text(mode)
