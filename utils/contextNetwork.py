@@ -12,8 +12,8 @@ def contextNetwork(apiDomain, wordCount):
         for groupIdx, cluster in enumerate(clusters):
             cluster['groupIdx'] = groupIdx
         return clusters
+
     def clustering(kcemList):
-            
         clusters = []
         for kcem in kcemList:
             # kcem最頂端的keyword是沒有hypernym的，其他太爛的字也沒有
@@ -42,8 +42,10 @@ def contextNetwork(apiDomain, wordCount):
                         if set(dictOfKey['hypernymSet']).intersection(set(kcemDict)):
                             tmp.update({originKcemKey:{'intersection':[key], 'hypernymSet':kcemDict.copy()}})
                             dictOfKey['intersection'].append(originKcemKey)
-
                     cluster['key'].update(tmp)
+
+                    # update the frequency of hypernym in Allhypernym
+                    # later we'll rank Allhypernym with frequence to choose best hypernym to represent this cluster
                     for hypernym in kcemDict:
                         cluster['Allhypernym'][hypernym] = cluster['Allhypernym'].setdefault(hypernym, 0) + termFrequency
 

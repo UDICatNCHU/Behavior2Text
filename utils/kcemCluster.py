@@ -1,12 +1,13 @@
 import requests
 from .doc2vec import doc2vec
+
 def kcemCluster(apiDomain, wordCount):
     def simpleUnion(clusters, unionList):
         finalCluster = clusters[unionList[0]]
         for cluster in clusters:
             if cluster['groupIdx'] in unionList:
                 finalCluster['key'].update(cluster['key'])
-                finalCluster['hypernymSet'].update(cluster['hypernymSet'])
+                finalCluster['Allhypernym'].update(cluster['Allhypernym'])
         clusters = [cluster for cluster in clusters if cluster['groupIdx'] not in unionList[0:]] + [finalCluster]
         for groupIdx, cluster in enumerate(clusters):
             cluster['groupIdx'] = groupIdx
@@ -22,7 +23,7 @@ def kcemCluster(apiDomain, wordCount):
             # union的條件是keyword自身以及hypernym有intersection就union
             originKcemKey = kcem['origin']
             termFrequency = wordCount[originKcemKey]
-            kcemDict = dict({originKcemKey:termFrequency}, **{hypernym:termFrequency for hypernym, possibility in kcem['value']})
+            kcemDict = dict({originKcemKey:termFrequency}, **{hypernym:termFrequency for hypernym, possibility in kcem['value'] if hypernym != '包含規範控制信息的維基百科條目'})
 
             insert = False
             unionList = []
@@ -30,18 +31,18 @@ def kcemCluster(apiDomain, wordCount):
                 groupIdx = cluster['groupIdx']
 
                 # 除了keyword自身的hypernyms以外，keyword自身也包含在內，只要有overlap就歸在同一群
-                intersection = set(cluster['hypernymSet']).intersection(set(kcemDict))
+                intersection = set(cluster['Allhypernym']).intersection(set(kcemDict))
                 if intersection:
                     insert = True
                     unionList.append(groupIdx)
 
                     cluster['key'].update({originKcemKey:termFrequency})
                     for hypernym in kcemDict:
-                        cluster['hypernymSet'][hypernym] = cluster['hypernymSet'].setdefault(hypernym, 0) + termFrequency
+                        cluster['Allhypernym'][hypernym] = cluster['Allhypernym'].setdefault(hypernym, 0) + termFrequency
 
             if not insert:
                 # 要注意，因為kcem有套用ngram搜尋，所以kcem的key是可能會重複的喔!!!
-                clusters.append({'key':{originKcemKey:termFrequency}, 'hypernymSet':kcemDict.copy(), 'groupIdx':len(clusters)})
+                clusters.append({'key':{originKcemKey:termFrequency}, 'Allhypernym':kcemDict.copy(), 'groupIdx':len(clusters)})
             else:
                 # 如果有insert過，就要判斷是否需要union
                 if len(unionList) >= 2:
@@ -54,7 +55,7 @@ def kcemCluster(apiDomain, wordCount):
     # sorting and format
     result = {}
     for cluster in clustering(kcemList):
-        cluster['hypernym'] = sorted(cluster['hypernymSet'].items(), key=lambda x:-x[1])[0][0]
+        cluster['hypernym'] = sorted(cluster['Allhypernym'].items(), key=lambda x:-x[1])[0][0]
         result[cluster['hypernym']] = {'key':{k:wordCount[k] for k in cluster['key']}}
         result[cluster['hypernym']]['count'] = sum([wordCount[k] for k in cluster['key']])
     return sorted(result.items(), key=lambda x:-x[1]['count'])
