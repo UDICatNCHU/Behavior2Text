@@ -1,5 +1,5 @@
-scipy
 numpy
+scipy
 requests
 pyprind
 udicOpenData

@@ -1,9 +1,14 @@
 import requests, os, json, threading, copy, math
 from collections import defaultdict, Counter
 from scipy import spatial
-import numpy as np
 from itertools import takewhile
 from udicOpenData.stopwords import rmsw
+
+from utils.hybrid import hybrid
+from utils.kcem import kcem
+from utils.tfidf import tfidf
+from utils.kcemCluster import kcemCluster
+from utils.contextNetwork import contextNetwork
 
 class Behavior2Text(object):
     def __init__(self, mode):
@@ -45,7 +50,7 @@ class Behavior2Text(object):
 
                     for _, topnKeywordDict in topn:
                         # 這邊的self.topnKeywordNum是這筆log要比到top幾的relevence candidate keywords
-                        topnKeywords = (x[0] for x in sorted(topnKeywordDict['key'].items(), key=lambda x:-x[1])[:self.topnKeywordNum])
+                        topnKeywords = (x[0] for x in sorted(topnKeywordDict['key'].items(), key=lambda x:-x[1])[:self.topnKeywordNum]) if type(list(topnKeywordDict['key'].values())[0]) == float else (x[0] for x in sorted(topnKeywordDict['key'].items(), key=lambda x:-len(x[1]))[:self.topnKeywordNum])
                         for topnKeyword in topnKeywords:
                             similarity = requests.get(self.apiDomain + '/kem/similarity?k1={}&k2={}'.format(replaceWord, topnKeyword)).json()
                             if similarity == {}:
@@ -116,118 +121,6 @@ class Behavior2Text(object):
         return generate(index, templateKeywords, raw=True)
 
     def buildTopn(self):
-        def doc2vec(wordCount):
-            vec = np.zeros(400)
-            for word, count in wordCount.items():
-                vec += np.array(requests.get(self.apiDomain + '/kem/vector?keyword={}'.format(word)).json()['value']) * count
-            return vec / sum(wordCount.values())
-
-
-        def tfidf(context):
-            tfidf = requests.post(self.apiDomain + '/tfidf/tfidf?flag=n', data={'doc':context}).json()
-            return [(key, {'key':{key:1}, 'count':value}) for key, value in tfidf]
-
-        def kcem(wordCount):
-            docVec = doc2vec(wordCount)
-            kcemList = requests.get(self.apiDomain + '/kcem/kcemList?keywords={}'.format('+'.join(wordCount))).json()
-            ###doc2vec version####
-            # result = requests.post(self.apiDomain + '/kcem?keyword={}'.format('+'.join(wordCount)), data={'counter':json.dumps(wordCount)}).json()
-            ######################
-            def countHypernym(kcemList):
-                result = defaultdict(dict)
-                for kcem in kcemList:
-                    if not kcem['value']:
-                        continue
-                    hypernym = kcem['value'][0][0]
-                    originKcemKey = kcem['key']
-                    termFrequency = wordCount[originKcemKey]
-
-                    # 把hypernym原始的查詢key給紀錄起來，他在文本中出現幾次也是
-                    result[hypernym].setdefault('key', {}).setdefault(originKcemKey, termFrequency)
-                    result[hypernym]['count'] = result[hypernym].setdefault('count', 0) + termFrequency
-                return result
-            result = countHypernym(kcemList)
-            return sorted(result.items(), key=lambda x:-x[1]['count'])
-
-        def kcemCluster(wordCount):
-            def clustering(kcemList):
-                def simpleUnion(clusters, unionList):
-                    finalCluster = clusters[unionList[0]]
-                    for cluster in clusters:
-                        if cluster['groupIdx'] in unionList:
-                            finalCluster['key'].update(cluster['key'])
-                            finalCluster['hypernymSet'].update(cluster['hypernymSet'])
-                    clusters = [cluster for cluster in clusters if cluster['groupIdx'] not in unionList[0:]] + [finalCluster]
-                    for groupIdx, cluster in enumerate(clusters):
-                        cluster['groupIdx'] = groupIdx
-                    return clusters
-                    
-                clusters = []
-                for kcem in kcemList:
-                    # kcem最頂端的keyword是沒有hypernym的，其他太爛的字也沒有
-                    if not kcem['value']:
-                        continue
-
-                    # union的條件是keyword自身以及hypernym有intersection就union
-                    originKcemKey = kcem['origin']
-                    termFrequency = wordCount[originKcemKey]
-                    kcemDict = dict({originKcemKey:termFrequency}, **{hypernym:termFrequency for hypernym, possibility in kcem['value']})
-
-                    insert = False
-                    unionList = []
-                    for cluster in clusters:
-                        groupIdx = cluster['groupIdx']
-
-                        # 除了keyword自身的hypernyms以外，keyword自身也包含在內，只要有overlap就歸在同一群
-                        intersection = set(cluster['hypernymSet']).intersection(set(kcemDict))
-                        if intersection:
-                            insert = True
-                            unionList.append(groupIdx)
-
-                            cluster['key'].update({originKcemKey:termFrequency})
-                            for hypernym in kcemDict:
-                                cluster['hypernymSet'][hypernym] = cluster['hypernymSet'].setdefault(hypernym, 0) + termFrequency
-
-                    if not insert:
-                        # 要注意，因為kcem有套用ngram搜尋，所以kcem的key是可能會重複的喔!!!
-                        clusters.append({'key':{originKcemKey:termFrequency}, 'hypernymSet':kcemDict, 'groupIdx':len(clusters)})
-                    else:
-                        # 如果有insert過，就要判斷是否需要union
-                        if len(unionList) >= 2:
-                            clusters = simpleUnion(clusters, unionList)
-
-                return clusters
-
-            docVec = doc2vec(wordCount)
-            kcemList = requests.get(self.apiDomain + '/kcem/kcemList?keywords={}'.format('+'.join(wordCount))).json()
-            # sorting and format
-            result = {}
-            for cluster in clustering(kcemList):
-                cluster['hypernym'] = sorted(cluster['hypernymSet'].items(), key=lambda x:-x[1])[0][0]
-                result[cluster['hypernym']] = {'key':{k:wordCount[k] for k in cluster['key']}}
-                result[cluster['hypernym']]['count'] = sum([wordCount[k] for k in cluster['key']])
-            return sorted(result.items(), key=lambda x:-x[1]['count'])
-
-        def hybrid(wordCount, context):
-            tfidfDict = dict(requests.post(self.apiDomain + '/tfidf/tfidf?flag=n', data={'doc':context}).json())
-            result = kcemCluster(wordCount)
-
-            refinedResult = []
-            for hypernym, dictionary in result:
-                delList = []
-                for term, tf in dictionary['key'].items():
-                    value = tfidfDict.get(term, 0)
-                    if not value:
-                        delList.append(term)
-                    else:
-                        dictionary['key'][term] = value
-                for term in delList:
-                    del dictionary['key'][term]
-
-                if dictionary['key']:
-                    refinedResult.append((hypernym, dictionary))
-            return sorted(refinedResult, key=lambda x:(-x[1]['count'], -max(x[1]['key'].values(), key=lambda y:y, default=0)))
-
         if os.path.isfile(self.output):
             return
         data = []
@@ -244,15 +137,15 @@ class Behavior2Text(object):
                     continue
 
                 if self.mode == 'kcem':
-                    data.append((kcem(wordCount), filePath))
+                    data.append((kcem(self.apiDomain, wordCount), filePath))
                 elif self.mode == 'tfidf':
-                    data.append((tfidf(context), filePath))
+                    data.append((tfidf(self.apiDomain, context), filePath))
                 elif self.mode == 'kcemCluster':
-                    data.append((kcemCluster(wordCount), filePath))
+                    data.append((kcemCluster(self.apiDomain, wordCount), filePath))
                 elif self.mode == 'hybrid':
-                    data.append((hybrid(wordCount, context), filePath))
+                    data.append((hybrid(self.apiDomain, wordCount, context), filePath))
                 elif self.mode == 'contextNetwork':
-                    data.append((contextNetwork(wordCount), filePath))
+                    data.append((contextNetwork(self.apiDomain, wordCount), filePath))
 
         json.dump(data, open(self.output, 'w'))        
 
