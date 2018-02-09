@@ -1,5 +1,5 @@
 from __init__ import Behavior2Text
-import sys, pyprind, subprocess
+import sys, pyprind, subprocess, json
 
 modeList = ['tfidf', 'kcem', 'kcemCluster', 'hybrid', 'contextNetwork']
 

@@ -39,9 +39,12 @@ def contextNetwork(apiDomain, wordCount):
                     # cluster['key'] store the degrees of keyword in contextNetwork
                     tmp = {}
                     for key, dictOfKey in cluster['key'].items():
+
+                        # iterate 整個cluster時，每個key會有毒立的hypernymSet，如果跟新進來的字有重疊到，就互相把 對方加入到intersection的list中
                         if set(dictOfKey['hypernymSet']).intersection(set(kcemDict)):
-                            tmp.update({originKcemKey:{'intersection':[key], 'hypernymSet':kcemDict.copy()}})
+                            tmp.setdefault(originKcemKey, {'intersection':[], 'hypernymSet':kcemDict.copy()})['intersection'].append(key)
                             dictOfKey['intersection'].append(originKcemKey)
+
                     cluster['key'].update(tmp)
 
                     # update the frequency of hypernym in Allhypernym
