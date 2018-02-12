@@ -12,10 +12,10 @@ from utils.contextNetwork import contextNetwork
 from utils.pagerank import pagerankMain
 
 class Behavior2Text(object):
-    def __init__(self, mode):
+    def __init__(self, mode, topNum, topnKeywordNum):
         self.template = json.load(open('template.json', 'r'))
-        self.topNum = 3
-        self.topnKeywordNum = 3
+        self.topNum = topNum
+        self.topnKeywordNum = topnKeywordNum
         self.accessibility_log = 'goodHuman'
         # self.accessibility_log = 'test'
         self.mode = mode
@@ -150,7 +150,7 @@ class Behavior2Text(object):
 
         if self.mode == 'pagerank':
             pagerankMain()
-
+            return
         json.dump(data, open(self.output, 'w'))
 
 if __name__ == '__main__':
