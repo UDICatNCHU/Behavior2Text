@@ -9,6 +9,7 @@ from utils.kcem import kcem
 from utils.tfidf import tfidf
 from utils.kcemCluster import kcemCluster
 from utils.contextNetwork import contextNetwork
+from utils.pagerank import pagerankMain
 
 class Behavior2Text(object):
     def __init__(self, mode):
@@ -147,7 +148,10 @@ class Behavior2Text(object):
                 elif self.mode == 'contextNetwork':
                     data.append((contextNetwork(self.apiDomain, wordCount), filePath))
 
-        json.dump(data, open(self.output, 'w'))        
+        if self.mode == 'pagerank':
+            pagerankMain()
+
+        json.dump(data, open(self.output, 'w'))
 
 if __name__ == '__main__':
     import sys, subprocess
