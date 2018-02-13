@@ -1,11 +1,7 @@
-dictionary
-seq2seq.json
-seq2seq_weights_start.h5
-stopwords.json
-ttt.json
-
 # virtualenv
 venv
+*.json
+*.zip
 
 # System stuff
 [Oo]bj
@@ -79,8 +75,4 @@ coverage.xml
 docs/_build/
 
 # PyBuilder
-<<<<<<< HEAD
 target/
-=======
-target/
->>>>>>> b30d664b427e1f822105be5248b1ccdf5d1596e6
