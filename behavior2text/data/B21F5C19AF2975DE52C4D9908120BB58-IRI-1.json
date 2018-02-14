@@ -1,0 +1,162 @@
+[
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "1",
+    "context": "國泰信用卡",
+    "time": "2017/07/07 17:53:00",
+    "event": "type"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "2",
+    "context": "國泰信用卡-google搜尋",
+    "time": "2017/07/07 17:53:00",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "3",
+    "context": "國泰信用卡-google搜尋",
+    "time": "2017/07/07 17:53:45",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "4",
+    "context": "i刷金融卡-信用卡介紹-信用卡-國泰世華銀行",
+    "time": "2017/07/07 17:54:05",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "5",
+    "context": "i刷金融卡-信用卡介紹-信用卡-國泰世華銀行",
+    "time": "2017/07/07 17:54:20",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "6",
+    "context": "金融卡專屬優惠",
+    "time": "2017/07/07 17:54:35",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "7",
+    "context": "i刷金融卡-信用卡介紹-信用卡-國泰世華銀行",
+    "time": "2017/07/07 17:54:37",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "8",
+    "context": "金融卡其他說明",
+    "time": "2017/07/07 17:55:06",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "9",
+    "context": "i刷金融卡-信用卡介紹-信用卡-國泰世華銀行",
+    "time": "2017/07/07 17:55:22",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "10",
+    "context": "金融卡常見問題",
+    "time": "2017/07/07 17:56:38",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "11",
+    "context": "i刷金融卡-信用卡介紹-信用卡-國泰世華銀行",
+    "time": "2017/07/07 17:56:44",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "12",
+    "context": "郵局換visa",
+    "time": "2017/07/07 17:58:15",
+    "event": "type"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "13",
+    "context": "郵局換visa-google搜尋",
+    "time": "2017/07/07 17:58:17",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "14",
+    "context": "郵政visa金融卡-中華郵政全球資訊網",
+    "time": "2017/07/07 17:58:19",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "15",
+    "context": "郵政visa金融卡-中華郵政全球資訊網",
+    "time": "2017/07/07 17:58:25",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "16",
+    "context": "郵政visa金融卡常見問答",
+    "time": "2017/07/07 17:59:30",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "17",
+    "context": "郵政visa金融卡常見問答-中華郵政全球資訊網",
+    "time": "2017/07/07 17:59:30",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "18",
+    "context": "已經持有郵政金融卡可以再申請visa金融卡嗎？-中華郵政全球資訊網",
+    "time": "2017/07/07 17:59:39",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "19",
+    "context": "金融卡申辦說明-中華郵政全球資訊網",
+    "time": "2017/07/07 17:59:57",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "20",
+    "context": "郵局換visa-google搜尋",
+    "time": "2017/07/07 17:59:59",
+    "event": "slide"
+  }
+]

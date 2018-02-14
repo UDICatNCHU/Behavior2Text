@@ -29,3 +29,7 @@ class Command(BaseCommand):
                     os.remove(mode + '.json')
 
         self.stdout.write(self.style.SUCCESS('finish !!!'))
+
+if __name__ == '__main__':
+    c = Command()
+    c.handle()

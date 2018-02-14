@@ -16,7 +16,7 @@ class Behavior2Text(object):
         self.template = json.load(open('template.json', 'r'))
         self.topNum = topNum
         self.topnKeywordNum = topnKeywordNum
-        self.accessibility_log = 'goodHuman'
+        self.accessibility_log = 'data'
         # self.accessibility_log = 'test'
         self.mode = mode
         self.output = '{}.json'.format(self.mode)

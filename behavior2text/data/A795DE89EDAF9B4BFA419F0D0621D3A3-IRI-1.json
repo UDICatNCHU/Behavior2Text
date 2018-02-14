@@ -1,0 +1,242 @@
+[
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "1",
+    "context": "鵪鶉",
+    "time": "2017/06/07 13:05:20",
+    "event": "type"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "2",
+    "context": "鵪鶉-google搜尋",
+    "time": "2017/06/07 13:05:21",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "3",
+    "context": "鵪鶉-google搜尋",
+    "time": "2017/06/07 13:05:23",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "4",
+    "context": "鵪鶉-產業現況-產業現況-臺灣畜產-財團法人中央畜產會",
+    "time": "2017/06/07 13:04:42",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "5",
+    "context": "鵪鶉-產業現況-產業現況-臺灣畜產-財團法人中央畜產會",
+    "time": "2017/06/07 13:04:42",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "6",
+    "context": "鵪鶉-google搜尋",
+    "time": "2017/06/07 13:05:23",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "7",
+    "context": "【更新】明明買蛋回家　結果得到一隻鵪鶉│即時新聞│20150120│蘋果日報",
+    "time": "2017/06/07 13:05:29",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "8",
+    "context": "【更新】明明買蛋回家　結果得到一隻鵪鶉│即時新聞│20150120│蘋果日報",
+    "time": "2017/06/07 13:05:29",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "9",
+    "context": "鵪鶉-google搜尋",
+    "time": "2017/06/07 13:06:48",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "10",
+    "context": "鵪鶉-海「線」的「西」有特產~鵪鶉",
+    "time": "2017/06/07 13:07:05",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "11",
+    "context": "鵪鶉-海「線」的「西」有特產~鵪鶉",
+    "time": "2017/06/07 13:07:05",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "12",
+    "context": "鵪鶉-google搜尋",
+    "time": "2017/06/07 13:07:44",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "28",
+    "context": "養鳥",
+    "time": "2017/06/07 13:13:58",
+    "event": "type"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "29",
+    "context": "養鳥-google搜尋",
+    "time": "2017/06/07 13:13:58",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "30",
+    "context": "養鳥-google搜尋",
+    "time": "2017/06/07 13:13:58",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "31",
+    "context": "養雞常見的三個方法，想養雞的朋友快來收藏-每日頭條",
+    "time": "2017/06/07 13:14:10",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "32",
+    "context": "養雞",
+    "time": "2017/06/07 13:15:03",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "33",
+    "context": "養雞-google搜尋",
+    "time": "2017/06/07 13:15:03",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "34",
+    "context": "養雞-google搜尋",
+    "time": "2017/06/07 13:15:03",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "35",
+    "context": "雞舍diy",
+    "time": "2017/06/07 13:15:26",
+    "event": "type"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "36",
+    "context": "雞舍diy-google搜尋",
+    "time": "2017/06/07 13:15:26",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "37",
+    "context": "雞舍diy-google搜尋",
+    "time": "2017/06/07 13:15:26",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "38",
+    "context": "10個新奇有趣的雞舍",
+    "time": "2017/06/07 13:15:41",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "39",
+    "context": "10個新奇有趣的雞舍",
+    "time": "2017/06/07 13:15:41",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "40",
+    "context": "雞舍diy-google搜尋",
+    "time": "2017/06/07 13:16:05",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "41",
+    "context": "雞生蛋蛋生雞",
+    "time": "2017/06/07 13:16:29",
+    "event": "type"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "42",
+    "context": "雞生蛋蛋生雞-google搜尋",
+    "time": "2017/06/07 13:16:29",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "43",
+    "context": "雞生蛋蛋生雞-google搜尋",
+    "time": "2017/06/07 13:16:29",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "44",
+    "context": "先有雞纔有蛋？！　英科學家破解謎題||nownews今日新聞",
+    "time": "2017/06/07 13:16:37",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "45",
+    "context": "先有雞纔有蛋？！　英科學家破解謎題||nownews今日新聞",
+    "time": "2017/06/07 13:16:37",
+    "event": "slide"
+  }
+]

@@ -1,0 +1,322 @@
+[
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "1",
+    "context": "旅行景點",
+    "time": "2017/06/06 11:18:05",
+    "event": "type"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "2",
+    "context": "旅行景點-google搜尋",
+    "time": "2017/06/06 11:18:05",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "3",
+    "context": "旅行景點-google搜尋",
+    "time": "2017/06/06 11:18:05",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "4",
+    "context": "【臺中/霧峯】亂入希臘羅馬風大學，一窺亞大蓮花池@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:18:05",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "5",
+    "context": "【臺中/霧峯】亂入希臘羅馬風大學，一窺亞大蓮花池@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:18:05",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "6",
+    "context": "旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:31:42",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "7",
+    "context": "旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:31:42",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "8",
+    "context": "【馬祖景點推薦】南竿鐵堡，用鐵血堅守與世隔絕的海上堡壘@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:31:51",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "9",
+    "context": "【馬祖景點推薦】南竿鐵堡，用鐵血堅守與世隔絕的海上堡壘@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:31:51",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "10",
+    "context": "臺灣民宿@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:32:47",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "11",
+    "context": "臺灣民宿@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:32:47",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "12",
+    "context": "【宜蘭/礁溪】歐洲城堡，宛如住進冰雪奇緣城堡的溫泉民宿@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:33:06",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "13",
+    "context": "【宜蘭/礁溪】歐洲城堡，宛如住進冰雪奇緣城堡的溫泉民宿@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:33:06",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "14",
+    "context": "臺灣民宿@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:34:06",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "15",
+    "context": "【花蓮/花市】藍天麗池飯店，處處窩心到心坎的舒適品質@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:35:19",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "16",
+    "context": "【花蓮/花市】藍天麗池飯店，處處窩心到心坎的舒適品質@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:35:19",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "17",
+    "context": "臺灣民宿@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:35:39",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "18",
+    "context": "旅行新竹‧履行中@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:36:26",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "19",
+    "context": "旅行新竹‧履行中@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:36:26",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "20",
+    "context": "旅行金門‧履行中@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:36:40",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "21",
+    "context": "旅行金門‧履行中@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:36:40",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "22",
+    "context": "旅行小琉球‧履行中@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:37:00",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "23",
+    "context": "旅行小琉球‧履行中@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:37:00",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "24",
+    "context": "旅行綠島‧履行中@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:37:08",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "25",
+    "context": "旅行綠島‧履行中@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:37:08",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "26",
+    "context": "輕鬆旅行‧懶人包@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:37:14",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "27",
+    "context": "輕鬆旅行‧懶人包@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:37:14",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "28",
+    "context": "【臺中這樣玩】火車站悠騎計畫，歷史巡禮七個經典景點玩一天@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:37:15",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "29",
+    "context": "【臺中這樣玩】火車站悠騎計畫，歷史巡禮七個經典景點玩一天@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:37:15",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "30",
+    "context": "輕鬆旅行‧懶人包@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:37:38",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "31",
+    "context": "旅行綠島‧履行中@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:38:49",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "32",
+    "context": "【臺東/達仁】愛心觀景臺，將蔚藍的海、翠綠的山盡收心底@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:39:19",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "33",
+    "context": "【臺東/達仁】愛心觀景臺，將蔚藍的海、翠綠的山盡收心底@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:39:19",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "34",
+    "context": "旅行臺東‧履行中@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:40:02",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "35",
+    "context": "旅行臺東‧履行中@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:40:02",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "36",
+    "context": "【臺東/東市】鐵花村音樂聚落，望著盞盞熱氣球在行道上綻放@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:40:21",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "37",
+    "context": "【臺東/東市】鐵花村音樂聚落，望著盞盞熱氣球在行道上綻放@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:40:21",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "42",
+    "context": "旅行臺東‧履行中@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:41:14",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "43",
+    "context": "【臺東/牡丹】臺26牡丹灣，奔馳在東海岸線逐浪放空@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:41:28",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "44",
+    "context": "【臺東/牡丹】臺26牡丹灣，奔馳在東海岸線逐浪放空@旅行‧履行中::痞客邦pixnet::",
+    "time": "2017/06/06 11:41:28",
+    "event": "slide"
+  }
+]
