@@ -14,11 +14,12 @@ def kcem(apiDomain, wordCount):
             if not kcem['value']:
                 continue
             hypernym = kcem['value'][0][0]
-            originKcemKey = kcem['key']
-            termFrequency = wordCount[originKcemKey]
+            ngramKey = kcem['key']
+            originKey = kcem['origin']
+            termFrequency = wordCount[originKey]
 
             # 把hypernym原始的查詢key給紀錄起來，他在文本中出現幾次也是
-            result[hypernym].setdefault('key', {}).setdefault(originKcemKey, termFrequency)
+            result[hypernym]['key'][ngramKey] = result[hypernym].setdefault('key', {}).setdefault(ngramKey, 0) + termFrequency
             result[hypernym]['count'] = result[hypernym].setdefault('count', 0) + termFrequency
         return result
     result = countHypernym(kcemList)

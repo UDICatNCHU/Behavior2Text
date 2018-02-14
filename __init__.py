@@ -12,7 +12,7 @@ from utils.contextNetwork import contextNetwork
 from utils.pagerank import pagerankMain
 
 class Behavior2Text(object):
-    def __init__(self, mode, topNum, topnKeywordNum):
+    def __init__(self, mode, topNum=3, topnKeywordNum=3):
         self.template = json.load(open('template.json', 'r'))
         self.topNum = topNum
         self.topnKeywordNum = topnKeywordNum
@@ -42,7 +42,7 @@ class Behavior2Text(object):
         # 再來檢查top5有沒有dictionary裏面的value是0的（tfidf or kcem的分數是0），是就剔除掉
         return [(hypernym, dictionary) for hypernym, dictionary in takewhile(lambda x:x[1]['count'] >= minCount, topList) if max(dictionary['key'].values(), key=lambda x:x) != 0][:n]
 
-    def sentence(self, topn, fileName):
+    def sentence(self, topn, fileName, useNDCG=True):
         def selectBestTemplate():
             def calTemplateSim(TemplateCandidate, templateIndex, template):
                 for replaceIndex in template['replaceIndices']:
@@ -85,6 +85,7 @@ class Behavior2Text(object):
         def generate(index, templateKeywords, raw=False):
             def NDCG(answerTable, template):
                 # get NDCG label data
+                NDCG_labelData = ''
                 for i in self.label:
                     if i['file'] == fileName:
                         NDCG_labelData = i
@@ -114,7 +115,7 @@ class Behavior2Text(object):
                 else:
                     answerTable[templateKeyword] = sorted(templateKeywordCandidateDict.items(), key=lambda x:-x[1])
 
-            ndcg_this_sentence, NDCG_labelData = NDCG(answerTable, self.template[int(index)])
+            ndcg_this_sentence, NDCG_labelData = NDCG(answerTable, self.template[int(index)]) if useNDCG else ('None', 'None')
             self.NDCG += ndcg_this_sentence
             return ''.join(map(lambda x:answerTable.get(x, x)[0][0] if type(answerTable.get(x, x)) == list and len(answerTable.get(x, x)) else x, self.template[int(index)]['key'])), ndcg_this_sentence, NDCG_labelData, self.template[int(index)]
             
