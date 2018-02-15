@@ -4,7 +4,7 @@ setup(
     name = 'behavior2text',
     packages=['behavior2text'],
     package_dir={'behavior2text':'behavior2text'},
-    package_data={'behavior2text':['management/commands/*']},
+    package_data={'behavior2text':['data/*', 'label.json', 'template.json', 'management/commands/*', 'utils/*']},
     version = '0.1',
     description = 'A django App for behavior2text',
     author = ['davidtnfsh'],

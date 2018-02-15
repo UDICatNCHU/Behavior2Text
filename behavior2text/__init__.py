@@ -4,25 +4,23 @@ from scipy import spatial
 from itertools import takewhile
 from udicOpenData.stopwords import rmsw
 
-from utils.hybrid import hybrid
-from utils.kcem import kcem
-from utils.tfidf import tfidf
-from utils.kcemCluster import kcemCluster
-from utils.contextNetwork import contextNetwork
-from utils.pagerank import pagerankMain
+from behavior2text.utils.hybrid import hybrid
+from behavior2text.utils.kcem import kcem
+from behavior2text.utils.tfidf import tfidf
+from behavior2text.utils.kcemCluster import kcemCluster
+from behavior2text.utils.contextNetwork import contextNetwork
+from behavior2text.utils.pagerank import pagerankMain
 
 class Behavior2Text(object):
     def __init__(self, mode, topNum=3, topnKeywordNum=3):
-        self.template = json.load(open('template.json', 'r'))
+        self.baseDir = os.path.dirname(os.path.abspath(__file__))
+        self.template = json.load(open(os.path.join(self.baseDir, 'template.json'), 'r'))
         self.topNum = topNum
         self.topnKeywordNum = topnKeywordNum
         self.accessibility_log = 'data'
-        # self.accessibility_log = 'test'
         self.mode = mode
         self.output = '{}.json'.format(self.mode)
-        self.EntityOnly = False
-        # self.EntityOnly = True
-        self.label = json.load(open('label.json', 'r'))
+        self.label = json.load(open(os.path.join(self.baseDir, 'label.json'), 'r'))
 
         self.DEBUG = True
         if self.DEBUG:
@@ -87,7 +85,7 @@ class Behavior2Text(object):
                 # get NDCG label data
                 NDCG_labelData = ''
                 for i in self.label:
-                    if i['file'] == fileName:
+                    if i['file'] in fileName:
                         NDCG_labelData = i
                         break
                 NDCG = 0
@@ -127,10 +125,10 @@ class Behavior2Text(object):
             return
         data = []
 
-        for (dir_path, dir_names, file_names) in pyprind.prog_bar(list(os.walk(self.accessibility_log))):
+        for (dir_path, dir_names, file_names) in pyprind.prog_bar(list(os.walk(os.path.join(self.baseDir, self.accessibility_log)))):
             for file in file_names:
-                filePath = os.path.join(dir_path,file)
-                context = ''.join([i['context'] for i in json.load(open(filePath))])
+                filePath = os.path.join(dir_path, file)
+                context = ''.join([i['context'] for i in json.load(open(filePath, 'r'))])
                 wordCount = Counter(rmsw(context, 'n'))
 
                 # 如果wordCount為空
