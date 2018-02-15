@@ -8,9 +8,11 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         # Positional arguments
         parser.add_argument('--method', type=str, default='kcemCluster')
+        parser.add_argument('--DEBUG', type=bool)
 
     def handle(self, *args, **options):
         method = options['method']
+        DEBUG = options['debug']
 
         b = Behavior2Text(method)
         b.buildTopn()
@@ -21,5 +23,5 @@ class Command(BaseCommand):
             if not topn:
                 self.stdout.write(self.style.SUCCESS('None'))
             else:
-                self.stdout.write(self.style.SUCCESS(b.sentence(topn, fileName)))
+                self.stdout.write(self.style.SUCCESS(b.sentence(topn, fileName, DEBUG)))
         self.stdout.write(self.style.SUCCESS('NDCG is {}'.format(b.NDCG/len(topnsFile))))

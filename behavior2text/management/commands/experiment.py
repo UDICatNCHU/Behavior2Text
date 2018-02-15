@@ -5,11 +5,18 @@ import sys, pyprind, subprocess, json, os
 class Command(BaseCommand):
     help = 'use this to test Behavior2Text !'
 
-    def handle(self, *args, **options):
-        modeList = ['tfidf', 'kcem', 'kcemCluster', 'hybrid', 'contextNetwork', 'pagerank']
+    def add_arguments(self, parser):
+        # Positional arguments
+        parser.add_argument('--topNMax', type=int, default=5)
+        parser.add_argument('--clusterTopnMax', type=int, default=5)
 
-        for topNum in pyprind.prog_bar(list(range(3, 10, 3))):
-            for clusterTopn in range(3, 10, 3):
+    def handle(self, *args, **options):
+        topNMax = options['topNMax']
+        clusterTopnMax = options['clusterTopnMax']
+
+        modeList = ['tfidf', 'kcem', 'kcemCluster', 'hybrid', 'contextNetwork', 'pagerank']
+        for topNum in pyprind.prog_bar(list(range(3, topNMax, 2))):
+            for clusterTopn in range(3, clusterTopnMax, 2):
                 print("topn: {}, clusterTopn:{}".format(topNum, clusterTopn))
                 print('======================================')
                 for mode in modeList:

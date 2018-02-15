@@ -18,7 +18,7 @@ class Behavior2Text(object):
         self.mode = mode
 
         self.baseDir = os.path.dirname(os.path.abspath(__file__))
-        self.accessibility_log = os.path.join(self.baseDir, 'data')
+        self.accessibility_log = os.path.join(self.baseDir, 'inputData')
         self.template = json.load(open(os.path.join(self.baseDir, 'labelData', 'template.json'), 'r'))
         self.label = json.load(open(os.path.join(self.baseDir, 'labelData', 'label.json'), 'r'))
         self.output = '{}.json'.format(self.mode)
@@ -160,6 +160,7 @@ class Behavior2Text(object):
 if __name__ == '__main__':
     import sys, subprocess
     mode = sys.argv[1]
+    DEBUG = True
 
     b = Behavior2Text(mode)
     b.buildTopn()
@@ -170,5 +171,5 @@ if __name__ == '__main__':
         if not topn:
             print([])
         else:
-            print(b.sentence(topn, fileName))
+            print(b.sentence(topn, fileName, DEBUG))
     print('NDCG is {}'.format(b.NDCG/len(topnsFile)))
