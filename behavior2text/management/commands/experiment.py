@@ -17,9 +17,9 @@ class Command(BaseCommand):
         modeList = ['tfidf', 'kcem', 'kcemCluster', 'hybrid', 'contextNetwork', 'pagerank']
         for topNum in pyprind.prog_bar(list(range(3, topNMax, 2))):
             for clusterTopn in range(3, clusterTopnMax, 2):
-                print("topn: {}, clusterTopn:{}".format(topNum, clusterTopn))
-                print('======================================')
                 for mode in modeList:
+                    print("topn: {}, clusterTopn:{} method:{}".format(topNum, clusterTopn, mode))
+                    print('======================================')
                     b = Behavior2Text(mode, topNum, clusterTopn)
                     b.buildTopn()
                     topnsFile = json.load(open(b.output, 'r'))

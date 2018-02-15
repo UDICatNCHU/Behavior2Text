@@ -8,7 +8,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         # Positional arguments
         parser.add_argument('--method', type=str, default='kcemCluster')
-        parser.add_argument('--DEBUG', type=bool)
+        parser.add_argument('--debug', type=bool)
 
     def handle(self, *args, **options):
         method = options['method']

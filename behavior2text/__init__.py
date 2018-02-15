@@ -120,7 +120,7 @@ class Behavior2Text(object):
             if DEBUG:
                 return ''.join(map(lambda x:answerTable.get(x, x)[0][0] if type(answerTable.get(x, x)) == list and len(answerTable.get(x, x)) else x, self.template[int(index)]['key'])), ndcg_this_sentence, NDCG_labelData, self.template[int(index)]
             else:
-                return ''.join(map(lambda x:answerTable.get(x, x)[0][0] if type(answerTable.get(x, x)) == list and len(answerTable.get(x, x)) else x, self.template[int(index)]['key']))
+                return ''.join(map(lambda x:answerTable.get(x, x)[0][0] if type(answerTable.get(x, x)) == list and len(answerTable.get(x, x)) else x, self.template[int(index)]['key'])), ndcg_this_sentence
             
         index, templateKeywords = selectBestTemplate()
         return generate(index, templateKeywords, raw=True)
