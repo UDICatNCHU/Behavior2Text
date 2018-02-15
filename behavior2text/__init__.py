@@ -13,14 +13,15 @@ from behavior2text.utils.pagerank import pagerankMain
 
 class Behavior2Text(object):
     def __init__(self, mode, topNum=3, topnKeywordNum=3):
-        self.baseDir = os.path.dirname(os.path.abspath(__file__))
-        self.template = json.load(open(os.path.join(self.baseDir, 'template.json'), 'r'))
         self.topNum = topNum
         self.topnKeywordNum = topnKeywordNum
-        self.accessibility_log = 'data'
         self.mode = mode
+
+        self.baseDir = os.path.dirname(os.path.abspath(__file__))
+        self.accessibility_log = os.path.join(self.baseDir, 'data')
+        self.template = json.load(open(os.path.join(self.baseDir, 'labelData', 'template.json'), 'r'))
+        self.label = json.load(open(os.path.join(self.baseDir, 'labelData', 'label.json'), 'r'))
         self.output = '{}.json'.format(self.mode)
-        self.label = json.load(open(os.path.join(self.baseDir, 'label.json'), 'r'))
 
         self.DEBUG = True
         if self.DEBUG:
@@ -125,7 +126,7 @@ class Behavior2Text(object):
             return
         data = []
 
-        for (dir_path, dir_names, file_names) in pyprind.prog_bar(list(os.walk(os.path.join(self.baseDir, self.accessibility_log)))):
+        for (dir_path, dir_names, file_names) in pyprind.prog_bar(list(os.walk(self.accessibility_log))):
             for file in file_names:
                 filePath = os.path.join(dir_path, file)
                 context = ''.join([i['context'] for i in json.load(open(filePath, 'r'))])
