@@ -1,4 +1,4 @@
-import requests, os, json, threading, copy, math, pyprind
+import requests, os, json, threading, copy, math
 from collections import defaultdict, Counter
 from scipy import spatial
 from itertools import takewhile
@@ -126,7 +126,7 @@ class Behavior2Text(object):
             return
         data = []
 
-        for (dir_path, dir_names, file_names) in pyprind.prog_bar(list(os.walk(self.accessibility_log))):
+        for (dir_path, dir_names, file_names) in os.walk(self.accessibility_log):
             for file in file_names:
                 filePath = os.path.join(dir_path, file)
                 context = ''.join([i['context'] for i in json.load(open(filePath, 'r'))])

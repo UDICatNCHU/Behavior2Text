@@ -8,7 +8,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         modeList = ['tfidf', 'kcem', 'kcemCluster', 'hybrid', 'contextNetwork', 'pagerank']
 
-        for topNum in range(3, 10, 3):
+        for topNum in pyprind.prog_bar(list(range(3, 10, 3))):
             for clusterTopn in range(3, 10, 3):
                 print("topn: {}, clusterTopn:{}".format(topNum, clusterTopn))
                 print('======================================')
