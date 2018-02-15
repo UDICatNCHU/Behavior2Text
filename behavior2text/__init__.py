@@ -41,7 +41,7 @@ class Behavior2Text(object):
         # 再來檢查top5有沒有dictionary裏面的value是0的（tfidf or kcem的分數是0），是就剔除掉
         return [(hypernym, dictionary) for hypernym, dictionary in takewhile(lambda x:x[1]['count'] >= minCount, topList) if max(dictionary['key'].values(), key=lambda x:x) != 0][:n]
 
-    def sentence(self, topn, fileName, useNDCG=True):
+    def sentence(self, topn, fileName, DEBUG=False):
         def selectBestTemplate():
             def calTemplateSim(TemplateCandidate, templateIndex, template):
                 for replaceIndex in template['replaceIndices']:
@@ -114,9 +114,13 @@ class Behavior2Text(object):
                 else:
                     answerTable[templateKeyword] = sorted(templateKeywordCandidateDict.items(), key=lambda x:-x[1])
 
-            ndcg_this_sentence, NDCG_labelData = NDCG(answerTable, self.template[int(index)]) if useNDCG else ('None', 'None')
+            ndcg_this_sentence, NDCG_labelData = NDCG(answerTable, self.template[int(index)])
             self.NDCG += ndcg_this_sentence
-            return ''.join(map(lambda x:answerTable.get(x, x)[0][0] if type(answerTable.get(x, x)) == list and len(answerTable.get(x, x)) else x, self.template[int(index)]['key'])), ndcg_this_sentence, NDCG_labelData, self.template[int(index)]
+
+            if DEBUG:
+                return ''.join(map(lambda x:answerTable.get(x, x)[0][0] if type(answerTable.get(x, x)) == list and len(answerTable.get(x, x)) else x, self.template[int(index)]['key'])), ndcg_this_sentence, NDCG_labelData, self.template[int(index)]
+            else:
+                return ''.join(map(lambda x:answerTable.get(x, x)[0][0] if type(answerTable.get(x, x)) == list and len(answerTable.get(x, x)) else x, self.template[int(index)]['key']))
             
         index, templateKeywords = selectBestTemplate()
         return generate(index, templateKeywords, raw=True)
