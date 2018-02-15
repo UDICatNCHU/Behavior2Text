@@ -1,0 +1,218 @@
+[
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "1",
+    "context": "聯發科股市",
+    "time": "2017/06/05 16:58:30",
+    "event": "type"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "2",
+    "context": "聯發科股市-google搜尋",
+    "time": "2017/06/05 16:58:31",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "3",
+    "context": "聯發科股市-google搜尋",
+    "time": "2017/06/05 16:58:32",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "4",
+    "context": "聯發科羣聯有實力調高股息|上市電子|股市|聯合新聞網",
+    "time": "2017/06/05 16:58:35",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "5",
+    "context": "聯發科羣聯有實力調高股息|上市電子|股市|聯合新聞網",
+    "time": "2017/06/05 16:58:35",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "6",
+    "context": "聯發科羣聯有實力調高股息|上市電子|股市|聯合新聞網",
+    "time": "2017/06/05 16:58:45",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "7",
+    "context": "聯發科羣聯有實力調高股息|上市電子|股市|聯合新聞網",
+    "time": "2017/06/05 16:58:45",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "8",
+    "context": "聯發科羣聯有實力調高股息|上市電子|股市|聯合新聞網",
+    "time": "2017/06/05 16:01:24",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "9",
+    "context": "聯發科羣聯有實力調高股息|上市電子|股市|聯合新聞網",
+    "time": "2017/06/05 17:01:24",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "10",
+    "context": "聯發科羣聯有實力調高股息|上市電子|股市|聯合新聞網",
+    "time": "2017/06/05 17:01:29",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "11",
+    "context": "股市|聯合新聞網",
+    "time": "2017/06/05 17:02:03",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "12",
+    "context": "股市|聯合新聞網",
+    "time": "2017/06/05 17:02:03",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "13",
+    "context": "臺積電股價突破210元市值再創新高紀錄|今日股市|股市|聯合新聞網",
+    "time": "2017/06/05 17:02:32",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "14",
+    "context": "臺積電股價突破210元市值再創新高紀錄|今日股市|股市|聯合新聞網",
+    "time": "2017/06/05 17:02:32",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "15",
+    "context": "臺積電股價突破210元市值再創新高紀錄|今日股市|股市|聯合新聞網",
+    "time": "2017/06/05 17:02:47",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "16",
+    "context": "臺積電股價突破210元市值再創新高紀錄|今日股市|股市|聯合新聞網",
+    "time": "2017/06/05 17:02:47",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "17",
+    "context": "股市|聯合新聞網",
+    "time": "2017/06/05 17:03:06",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "18",
+    "context": "yahoo奇摩股市聯發科",
+    "time": "2017/06/05 17:03:25",
+    "event": "type"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "19",
+    "context": "yahoo奇摩股市聯發科",
+    "time": "2017/06/05 17:03:27",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "20",
+    "context": "yahoo奇摩股市聯發科",
+    "time": "2017/06/05 17:03:28",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "21",
+    "context": "聯發科(2454)-技術分析-yahoo!奇摩股市聯發科2454個股技術分析，查詢股市聯發科個股股價、新聞、成交明細、技術分析等資訊，就在yahoo!奇摩股市。",
+    "time": "2017/06/05 17:03:42",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "22",
+    "context": "聯發科(2454)-技術分析-yahoo!奇摩股市聯發科2454個股技術分析，查詢股市聯發科個股股價、新聞、成交明細、技術分析等資訊，就在yahoo!奇摩股市。",
+    "time": "2017/06/05 17:03:43",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "23",
+    "context": "聯發科鉅亨網",
+    "time": "2017/06/05 17:04:52",
+    "event": "type"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "24",
+    "context": "聯發科鉅亨網-google搜尋",
+    "time": "2017/06/05 17:04:52",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "25",
+    "context": "聯發科鉅亨網-google搜尋",
+    "time": "2017/06/05 17:04:52",
+    "event": "slide"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "26",
+    "context": "聯發科(2454)_歷史行情_個股總覽_臺股_鉅亨網鉅亨網提供你最完整的臺股資訊。聯發科股市歷史行情,漲跌,成交量,成交金額,本益比",
+    "time": "2017/06/05 17:04:52",
+    "event": "click"
+  },
+  {
+    "category": "1",
+    "app": "Chrome",
+    "id": "27",
+    "context": "聯發科(2454)_歷史行情_個股總覽_臺股_鉅亨網鉅亨網提供你最完整的臺股資訊。聯發科股市歷史行情,漲跌,成交量,成交金額,本益比",
+    "time": "2017/06/05 17:04:52",
+    "event": "slide"
+  }
+]
