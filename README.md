@@ -35,10 +35,13 @@ url domain:<http://udiclab.cs.nchu.edu.tw>
 
 ### Commands
 
-1. `python3 manage.py experiment`:
-    * show NDCG of all kind of methods: tfidf, kcem, kcemCluster, hybrid, contextNetwork, pagerank
+1. `python3 manage.py experiment --topNMax=<(optional) at least 2> --clusterTopnMax=<(optional) at least 2>`:
+    * show NDCG of sequences when using each kind of methods: tfidf, kcem, kcemCluster, hybrid, contextNetwork, pagerank
     * (Optional Usage): `python3 experiment.py`
-2. `python3 __init__.py <method>`:
+2. `python3 manage.py sentence --method=<> --debug=<True/False>`:
+    * show sequences with those accessibility using provided method below
+    * method:tfidf, kcem, kcemCluster, hybrid, contextNetwork, pagerank
+3. `python3 __init__.py <method>`:
     * tfidf
     * kcem
     * kcemCluster

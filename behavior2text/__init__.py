@@ -125,7 +125,7 @@ class Behavior2Text(object):
         index, templateKeywords = selectBestTemplate()
         return generate(index, templateKeywords, raw=True)
 
-    def buildTopn(self):
+    def buildTopn(self, accessibilityTopn=0):
         if os.path.isfile(self.output):
             return
         data = []
@@ -133,7 +133,7 @@ class Behavior2Text(object):
         for (dir_path, dir_names, file_names) in os.walk(self.accessibility_log):
             for file in file_names:
                 filePath = os.path.join(dir_path, file)
-                context = ''.join([i['context'] for i in json.load(open(filePath, 'r'))])
+                context = ''.join([i['context'] for i in json.load(open(filePath, 'r'))[accessibilityTopn:]])
                 wordCount = Counter(rmsw(context, 'n'))
 
                 # 如果wordCount為空
