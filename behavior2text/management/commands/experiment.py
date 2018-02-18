@@ -14,9 +14,10 @@ class Command(BaseCommand):
         parser.add_argument('--topNMax', type=int, default=3)
         parser.add_argument('--clusterTopnMax', type=int, default=3)
         parser.add_argument('--accessibilityTopnMax', type=int, default=1)
+        parser.add_argument('--pic', type=str)
 
     @staticmethod
-    def draw(NDCG_DICT, labels):
+    def draw(NDCG_DICT, labels, pic):
         colorList = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
         for key, value in NDCG_DICT.items():
             plt.plot(range(0, len(value)), value, 'o-', color=colorList.pop(),label=key)
@@ -26,7 +27,7 @@ class Command(BaseCommand):
         # You can specify a rotation for the tick labels in degrees or with keywords.
         plt.xticks(range(0, len(NDCG_DICT.values().__iter__().__next__())), labels, rotation='vertical')
         # plt.gca().yaxis.set_major_formatter(tick.FormatStrFormatter('%f ndcg'))
-        plt.savefig('behavior2text.png')
+        plt.savefig('{}.png'.format(pic))
 
     def handle(self, *args, **options):
         NDCG_DICT = defaultdict(list)
@@ -35,6 +36,7 @@ class Command(BaseCommand):
         topNMax = options['topNMax']
         clusterTopnMax = options['clusterTopnMax']
         accessibilityTopnMax = options['accessibilityTopnMax']
+        pic = options['pic']
 
         modeList = ['tfidf', 'kcem', 'kcemCluster', 'hybrid', 'contextNetwork', 'pagerank']
         for accessibilityTopn in pyprind.prog_bar(list(range(0, accessibilityTopnMax, 2))):
@@ -63,7 +65,7 @@ class Command(BaseCommand):
                     for mode in modeList:
                         os.remove(mode + '.json')
 
-        self.draw(NDCG_DICT, labels)
+        self.draw(NDCG_DICT, labels, pic)
         self.stdout.write(self.style.SUCCESS('finish !!!'))
 
 if __name__ == '__main__':
