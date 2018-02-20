@@ -12,16 +12,17 @@ from behavior2text.utils.contextNetwork import contextNetwork
 from behavior2text.utils.pagerank import pagerankMain
 
 class Behavior2Text(object):
-    def __init__(self, mode, topNum=3, topnKeywordNum=3):
-        self.topNum = topNum
-        self.topnKeywordNum = topnKeywordNum
+    def __init__(self, mode, topN=3, topnKeywordNum=3, accessibilityTopn=0):
         self.mode = mode
+        self.topN = topN
+        self.topnKeywordNum = topnKeywordNum
+        self.accessibilityTopn = accessibilityTopn
 
         self.baseDir = os.path.dirname(os.path.abspath(__file__))
         self.accessibility_log = os.path.join(self.baseDir, 'inputData')
         self.template = json.load(open(os.path.join(self.baseDir, 'labelData', 'template.json'), 'r'))
         self.label = json.load(open(os.path.join(self.baseDir, 'labelData', 'label.json'), 'r'))
-        self.output = '{}.json'.format(self.mode)
+        self.output = '{}-{}.json'.format(self.mode, self.accessibilityTopn)
 
         self.DEBUG = True
         if self.DEBUG:
@@ -125,7 +126,7 @@ class Behavior2Text(object):
         index, templateKeywords = selectBestTemplate()
         return generate(index, templateKeywords, raw=True)
 
-    def buildTopn(self, accessibilityTopn=0):
+    def buildTopn(self):
         if os.path.isfile(self.output):
             return
         data = []
@@ -133,7 +134,7 @@ class Behavior2Text(object):
         for (dir_path, dir_names, file_names) in os.walk(self.accessibility_log):
             for file in file_names:
                 filePath = os.path.join(dir_path, file)
-                context = ''.join([i['context'] for i in json.load(open(filePath, 'r'))[accessibilityTopn:]])
+                context = ''.join([i['context'] for i in json.load(open(filePath, 'r'))[self.accessibilityTopn:]])
                 wordCount = Counter(rmsw(context, 'n'))
 
                 # 如果wordCount為空
@@ -153,9 +154,52 @@ class Behavior2Text(object):
                     data.append((contextNetwork(self.apiDomain, wordCount), filePath))
 
         if self.mode == 'pagerank':
+            pagerankMain(self.output)
+            return
+        json.dump(data, open(self.output, 'w'))
+
+    def generateTopn(self, accessibilityLog):
+        data = []
+
+        context = ''.join([i['context'] for i in accessibilityLog[self.accessibilityTopn:]])
+        wordCount = Counter(rmsw(context, 'n'))
+
+        # 如果wordCount為空
+        # 代表Context Text經過stopword過濾後沒剩下任何字
+        if not wordCount:
+            json.dump([], open(self.output, 'w'))
+            return
+
+        if self.mode == 'kcem':
+            data.append((kcem(self.apiDomain, wordCount), ''))
+        elif self.mode == 'tfidf':
+            data.append((tfidf(self.apiDomain, context), ''))
+        elif self.mode == 'kcemCluster':
+            data.append((kcemCluster(self.apiDomain, wordCount), ''))
+        elif self.mode == 'hybrid':
+            data.append((hybrid(self.apiDomain, wordCount, context), ''))
+        elif self.mode == 'contextNetwork':
+            data.append((contextNetwork(self.apiDomain, wordCount), ''))
+
+        if self.mode == 'pagerank':
             pagerankMain()
             return
         json.dump(data, open(self.output, 'w'))
+
+    def main(self, DEBUG=False):
+        topnsFile = json.load(open(self.output, 'r'))
+        for refineData, fileName in topnsFile:
+            topn = self.getTopN(refineData, self.topN) if refineData else []
+
+            if not topn:
+                print([])
+            else:
+                print(self.sentence(topn, fileName, DEBUG))
+
+        result = self.NDCG/len(topnsFile)
+        print('NDCG is {}'.format(result))
+        return result
+        
 
 if __name__ == '__main__':
     import sys, subprocess
@@ -164,12 +208,4 @@ if __name__ == '__main__':
 
     b = Behavior2Text(mode)
     b.buildTopn()
-    topnsFile = json.load(open(b.output, 'r'))
-    for refineData, fileName in topnsFile:
-        topn = b.getTopN(refineData, b.topNum) if refineData else []
-
-        if not topn:
-            print([])
-        else:
-            print(b.sentence(topn, fileName, DEBUG))
-    print('NDCG is {}'.format(b.NDCG/len(topnsFile)))
+    b.main(DEBUG)

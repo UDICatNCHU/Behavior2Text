@@ -39,8 +39,8 @@ def pageRank(G, s = .85, maxerr = .0001):
     # return normalized pagerank
     return r/float(sum(r))
 
-def pagerankMain():
-    contextNetworkData = json.load(open('contextNetwork.json', 'r'))
+def pagerankMain(outputFile):
+    contextNetworkData = json.load(open(outputFile.replace('pagerank', 'contextNetwork'), 'r'))
 
     for contextNetworks, filepath in contextNetworkData:
         for hypernym, contextNetwork in contextNetworks:
@@ -71,7 +71,7 @@ def pagerankMain():
 
             for index, score in enumerate(pageRank(matrix)):
                 contextNetwork[invertedIndex[index]] = score
-    json.dump(contextNetworkData, open('pagerank.json', 'w'))
+    json.dump(contextNetworkData, open(outputFile, 'w'))
 
 if __name__=='__main__':
     # Example extracted from 'Introduction to Information Retrieval'
