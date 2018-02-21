@@ -20,10 +20,8 @@ class Command(BaseCommand):
     def draw(NDCG_DICT, labels, pic):
         colorList = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
         for key, value in NDCG_DICT.items():
-            plt.plot(range(0, len(value)), value, 'o-', color=colorList.pop(),label=key)
+            plt.plot(labels[::6], value, 'o-', color=colorList.pop(),label=key)
         plt.legend(loc='best')
-        # You can specify a rotation for the tick labels in degrees or with keywords.
-        plt.xticks(range(0, len(NDCG_DICT.values().__iter__().__next__())), labels, rotation='vertical')
         plt.savefig('{}.png'.format(pic))
 
     def handle(self, *args, **options):
