@@ -124,7 +124,7 @@ And then use word2vec to select the best template having the higest similarity  
     * Selected Tempalte:`在查詢<臺中><火車>的資訊`
     * Output:`在查詢<冬季><火車>的資訊`
 
-4. Benchmark:
+## Benchmark:
 Use these ranking data to calculate NDCG
 
 ```
