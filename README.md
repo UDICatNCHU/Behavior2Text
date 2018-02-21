@@ -13,7 +13,7 @@ On Keyword Extraction for User Intention Description based on Smartphone Context
     "category": "4",
     "app": "Chrome",
     "id": "5",
-    "context": "臺北兩天一夜",
+    "context": "墨爾本 天氣 6月 ",
     "time": "2017/07/02 19:46:33",
     "event": "type"
   },
@@ -21,8 +21,24 @@ On Keyword Extraction for User Intention Description based on Smartphone Context
     "category": "4",
     "app": "Chrome",
     "id": "6",
-    "context": "【臺北景點】臺北一日遊/臺北兩天一夜/臺北好吃好玩景點(私心推薦)-冰蹦拉...",
+    "context": "墨爾本（Melbourne）天氣- 氣候和溫度- 澳洲旅遊局（Tourism Australia）https://www.australia.com › 資訊 › 澳洲的天氣 冬季（六月至八月） . 在冬天，平均氣溫介乎攝氏6.5至14.2度 （華氏43.7至57.6度），維多利亞東北部，即高地區（High Country）和下雪。天氣經常寒冷多雲，晚上可能會結霜。每年的這個時候，大雨都十分罕見。",
     "time": "2017/07/02 19:48:07",
+    "event": "click"
+  },
+  {
+    "category": "4",
+    "app": "Chrome",
+    "id": "8",
+    "context": "[有關澳洲天氣討論] - 背包客棧",
+    "time": "2017/07/02 19:48:51",
+    "event": "slide"
+  },
+  {
+    "category": "4",
+    "app": "Chrome",
+    "id": "9",
+    "context": "呵呵呵...已經有人在喊我了....其實我看到標題就已忍不住手癢了.... 我去年七月去的....氣溫還好耶..絶不會到 凍壞 的程度...甚至白天太陽出來時,穿太多還會太熱的咧~~ 不過,我也是不那麼怕冷的人啦..... 其實在國外溫度看來低時,通常不像台灣那種 濕冷 ,所以那個8度應該沒有你想的冷...可是厚外套還是要帶的啦! (若真的不幸真的遇到冷的你受不了,給個建議,當地買件羊毛內衣吧...不是有一堆人到澳洲都要特別買些什麼綿羊油,內衣什麼的... ,不過要問我那種好? 這我就不清楚,我一向不太瞎拼的 ) <想當初我也是認為那兒是南半球,氣溫會很低,所以其實也帶了不少衣服去的...可是感覺那兒的冬天沒比我們這兒冷多少....不過我是住在南台灣喔!> 若有要到墨爾本...甚至去看小企鵝...那個南極吹來的風是不可以小看的就是了!(意思是,保暖擋風的要準備好...甚至去看小企鵝時想抓一條毯子去裹身體或披在腿上也是不誇張的啦....別人不會笑你的!)",
+    "time": "2017/07/02 19:49:02",
     "event": "click"
   }
   ...
@@ -65,166 +81,48 @@ It turns out that we'll extract n * m keywords at most!
 And then use word2vec to select the best template having the higest similarity  between n * m keywords.
 
   * KCEM:
+    * ![kcem.svg](README-pic/KCEM.svg)
+    * We seem all of keyword's hypernyms as a connected component.
 
-![kcem.svg](README-pic/KCEM.svg)
+      If there has at least one same hypernym between two connected component, unify it.
 
-We seem all of keyword's hypernyms as a connected component.
-
-If there has at least one same hypernym between two connected component, unify it.
-
-Use hypernym as Key, real keyword and its frequency as value, sorted by sum of freqency of this connected component.
-```
-{
-  "離島": {
-    "count": 118,
-    "key": {
-      "綠島": 80,
-      "蘭嶼": 38
-    }
-  },
-  "操作系統技術": {
-    "count": 35,
-    "key": {
-      "行程": 35
-    }
-  },
-  "旅遊": {
-    "count": 30,
-    "key": {
-      "自由行": 9,
-      "環球飛行": 2,
-      "旅遊住宿": 15,
-      "旅行": 4
-    }
-  }
-}
-```
-
+      Use hypernym as Key, real keyword and its frequency as value, sorted by sum of freqency of this connected component.  
+    * Selected Keywords:`機場 墨爾本機場 愛華隆機場 墨爾本 `
+    * Selected Template:`在查詢<桌子>和<椅子>的資訊`
+    * Ouput:`在查詢<愛華隆機場>和<墨爾本>的資訊`
   * KCEM-Union:
+    * ![KCEMUnion.svg](README-pic/KCEMUnion.svg)
+    * Just like KCEM method, but the union condition is not that strict!
 
-![KCEMUnion.svg](README-pic/KCEMUnion.svg)
+      We seem all of keyword's hypernyms and keyword itself as a connected component.
 
-Just like KCEM method, but the union condition is not that strict!
+      If there's any intersection between two connected component, unify it.
 
-We seem all of keyword's hypernyms and keyword itself as a connected component.
-
-If there's any intersection between two connected component, unify it.
-
-Use hypernym of the most frequenest keyword as Key, real keyword and its frequency as value, sorted by sum of frequency of this connected component.
-```
-{
-  "離島": {
-    "key": {
-      "韓國": 4,
-      "住宿": 15,
-      "環球旅行": 2,
-      "旅行社": 2,
-      "海洋": 10,
-      "旅行": 4,
-      "旅遊": 22,
-      "旅遊景點": 1,
-      "臺灣": 2,
-      "離島": 2,
-      "溫泉": 2,
-      "臺東": 5,
-      "蘭嶼": 36,
-      "交通": 11,
-      "島嶼": 10,
-      "蘭嶼開元港": 2,
-      "規劃": 11,
-      "冒險": 2,
-      "景點": 7,
-      "遊記": 2,
-      "馬祖": 5,
-      "行程": 35,
-      "自由行": 9,
-      "遊行": 1,
-      "韓文": 2,
-      "服務": 2,
-      "火燒島": 1,
-      "二日遊": 2,
-      "綠島": 80
-    },
-    "count": 289
-  },
-  "旅館類型": {
-    "key": {
-      "民宿": 22
-    },
-    "count": 22
-  },
-  "google搜尋": {
-    "key": {
-      "google搜尋": 16
-    },
-    "count": 16
-  }
-}
-```
+      Use hypernym of the most frequenest keyword as Key, real keyword and its frequency as value, sorted by sum of frequency of this connected component.
+    * Selected Keywords:`澳洲 溫度 墨爾本 交通方式 天氣 愛華隆機場 機場 墨爾本機場`
+    * Selected Template:`在查詢<臺南><氣象>的資訊`
+    * Output:`在查詢<墨爾本><天氣>的資訊`
 
   * tfidf:
-Just calculate its tfidf, and then sorted the list by tfidf.
-```
-{
-  "galaxy":41.72104244821227,
-  "蜜粉":39.45028362842932,
-  "samsung":35.82365543350755,
-  ...
-  ...
-  ...
-}
-```
+    * Just calculate its tfidf, and then sorted the list by tfidf.
+    * Selected Keywords:`墨爾本 樓主 墨爾本機場`
+    * Selected Template:`在查詢<臺北><餐廳>的資訊`
+    * Output:`在查詢<墨爾本><墨爾本機場>的資訊`
   * hybrid:
-The same as KCEM-Union, but use tfidf as value of connected component instead of frequency.
-
-```
-{
-  "離島": {
-    "key": {
-      "馬祖": 22.812636061002312,
-      "韓國": 12.28856330918774,
-      "島嶼": 19.084689345170105,
-      "遊記": 14.742401880463753,
-      "臺東": 19.25972315629526,
-      "冒險": 11.572864538743522,
-      "旅行社": 14.621681032386105,
-      "海洋": 21.42152881180279,
-      "規劃": 18.22662935419741,
-      "交通": 18.467362583669633,
-      "韓文": 13.897955403834649,
-      "景點": 19.15129458011237,
-      "行程": 32.48313404495418,
-      "綠島": 49.234175255426,
-      "住宿": 28.309421028803154,
-      "二日遊": 23.16094204946314,
-      "離島": 13.929111149649614,
-      "自由行": 29.674035164089894,
-      "蘭嶼開元港": 23.84745415407191,
-      "溫泉": 12.792187057373232,
-      "環球旅行": 18.146126713419054,
-      "蘭嶼": 42.67154205712718,
-      "臺灣": 6.692997837648712
-    },
-    "count": 276
-  },
-  "旅館類型": {
-    "key": {
-      "民宿": 40.512122452497245
-    },
-    "count": 22
-  },
-  "google搜尋": {
-    "key": {
-      "google搜尋": 39.9375716772893
-    },
-    "count": 15
-  }
-}
-```
+    * The same as KCEM-Union, but use tfidf as value of connected component instead of frequency.
+    * Selected Keywords:`墨爾本 愛華隆機場 交通方式 企鵝 天氣 交通工具 機場 墨爾本機場 `
+    * Selected Template:`在查詢<汽車><性能>的資訊`
+    * Output:`在查詢<交通工具><天氣>的資訊`
   * contextNetwork:
-The same as KCEM-Union, but use indegree as value of connected component instead of frequency.
+    * The same as KCEM-Union, but use indegree as value of connected component instead of frequency.
+    * Selected Keywords:`南半球 風是 冬季 交通 墨爾本機場 巴士 交通方式 愛華隆機場 `
+    * Selected Template:`在查詢<汽車><性能>的資訊`
+    * Template:`在查詢<巴士><天氣>的資訊`
   * pagerank:
-The same as KCEM-Union, but use pagerank score as value of connected component instead of frequency.
+    * The same as KCEM-Union, but use pagerank score as value of connected component instead of frequency.
+    * Selected Keywords:`南半球 冬季 企鵝 墨爾本機場 愛華隆機場 火車 交通方式 巴士 `
+    * Selected Tempalte:`在查詢<臺中><火車>的資訊`
+    * Output:`在查詢<冬季><火車>的資訊`
 
 4. Benchmark:
 Use these ranking data to calculate NDCG
@@ -346,6 +244,17 @@ url domain:<http://udiclab.cs.nchu.edu.tw>
 - requests
 - pyprind
 - udicOpenData
+
+## TODO
+
+挑選template以及把keyword填入template中，應該需要參考多種同類型的template避免偏差
+
+例如：
+  * Selected Keyword:`南半球 冬季 企鵝 墨爾本機場 愛華隆機場 火車 交通方式 巴士`
+  * Selected Template:`在查詢<臺中>火<車的>資訊`
+  * Output:`在查詢<冬季><火車>的資訊`
+
+因為keyword和template中都有火車，導致火車會被優先挑選，造成偏差
 
 ## Contributors
 
