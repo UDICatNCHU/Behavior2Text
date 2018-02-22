@@ -84,7 +84,7 @@ And then use word2vec to select the best template having the higest similarity  
     * ![kcem.svg](README-pic/KCEM.svg)
     * We seem all of keyword's hypernyms as a connected component.
 
-      If there has at least one same hypernym between two connected component, unify it.
+      If there has a same hypernym between two keywords, unify it. (Notice: each keyword only has one hypernym, choosing with the highest probability of kcem)
 
       Use hypernym as Key, real keyword and its frequency as value, sorted by sum of freqency of this connected component.  
     * Selected Keywords:`機場 墨爾本機場 愛華隆機場 墨爾本 `
