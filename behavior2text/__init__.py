@@ -42,13 +42,17 @@ class Behavior2Text(object):
         # 再來檢查top5有沒有dictionary裏面的value是0的（tfidf or kcem的分數是0），是就剔除掉
         return [(hypernym, dictionary) for hypernym, dictionary in takewhile(lambda x:x[1]['count'] >= minCount, topList) if max(dictionary['key'].values(), key=lambda x:x) != 0][:n]
 
-    def sentence(self, topn, fileName, DEBUG=False):
+    def sentence(self, refineData, fileName, DEBUG=False):
         def selectBestTemplate():
             def calTemplateSim(TemplateCandidate, templateIndex, template):
                 for replaceIndex in template['replaceIndices']:
                     replaceWord = template['key'][replaceIndex]
                     TemplateCandidate[templateIndex].setdefault(replaceWord, {})
 
+                    if self.mode == 'tfidf':
+                        topn = self.getTopN(refineData, self.topN * self.topnKeywordNum) if refineData else []
+                    else:
+                        topn = self.getTopN(refineData, self.topN) if refineData else []
                     for _, topnKeywordDict in topn:
                         # 這邊的self.topnKeywordNum是這筆log要比到top幾的relevence candidate keywords
                         topnKeywords = (x[0] for x in sorted(topnKeywordDict['key'].items(), key=lambda x:-x[1])[:self.topnKeywordNum]) if type(list(topnKeywordDict['key'].values())[0]) != list else (x[0] for x in sorted(topnKeywordDict['key'].items(), key=lambda x:-len(x[1]))[:self.topnKeywordNum])
@@ -146,14 +150,14 @@ class Behavior2Text(object):
                     data.append((kcem(self.apiDomain, wordCount), filePath))
                 elif self.mode == 'tfidf':
                     data.append((tfidf(self.apiDomain, context), filePath))
-                elif self.mode == 'kcemCluster':
+                elif self.mode == 'CFN-Vertex-Weight':
                     data.append((kcemCluster(self.apiDomain, wordCount), filePath))
-                elif self.mode == 'hybrid':
+                elif self.mode == 'CFN-Vertex-Weight-TFIDF':
                     data.append((hybrid(self.apiDomain, wordCount, context), filePath))
-                elif self.mode == 'contextNetwork':
+                elif self.mode == 'CFN-Vertex-Degree':
                     data.append((contextNetwork(self.apiDomain, wordCount), filePath))
 
-        if self.mode == 'pagerank':
+        if self.mode == 'CFN-PageRank':
             pagerankMain(self.output)
             return
         json.dump(data, open(self.output, 'w'))
@@ -174,14 +178,14 @@ class Behavior2Text(object):
             data.append((kcem(self.apiDomain, wordCount), ''))
         elif self.mode == 'tfidf':
             data.append((tfidf(self.apiDomain, context), ''))
-        elif self.mode == 'kcemCluster':
+        elif self.mode == 'CFN-Vertex-Weight':
             data.append((kcemCluster(self.apiDomain, wordCount), ''))
-        elif self.mode == 'hybrid':
+        elif self.mode == 'CFN-Vertex-Weight-TFIDF':
             data.append((hybrid(self.apiDomain, wordCount, context), ''))
-        elif self.mode == 'contextNetwork':
+        elif self.mode == 'CFN-Vertex-Degree':
             data.append((contextNetwork(self.apiDomain, wordCount), ''))
 
-        if self.mode == 'pagerank':
+        if self.mode == 'CFN-PageRank':
             pagerankMain()
             return
         json.dump(data, open(self.output, 'w'))
@@ -190,12 +194,10 @@ class Behavior2Text(object):
         topnsFile = json.load(open(self.output, 'r'))
         for refineData, fileName in topnsFile:
             topn = self.getTopN(refineData, self.topN) if refineData else []
-
             if not topn:
                 print([])
-            else:
-                print(self.sentence(topn, fileName, DEBUG))
-
+            else:   
+                print(self.sentence(refineData, fileName, DEBUG))
         result = self.NDCG/len(topnsFile)
         print('NDCG is {}'.format(result))
         return result

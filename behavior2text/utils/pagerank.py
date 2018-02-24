@@ -40,7 +40,7 @@ def pageRank(G, s = .85, maxerr = .0001):
     return r/float(sum(r))
 
 def pagerankMain(outputFile):
-    contextNetworkData = json.load(open(outputFile.replace('pagerank', 'contextNetwork'), 'r'))
+    contextNetworkData = json.load(open(outputFile.replace('CFN-PageRank', 'CFN-Vertex-Degree'), 'r'))
 
     for contextNetworks, filepath in contextNetworkData:
         for hypernym, contextNetwork in contextNetworks:

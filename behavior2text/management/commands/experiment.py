@@ -18,9 +18,14 @@ class Command(BaseCommand):
 
     @staticmethod
     def draw(NDCG_DICT, labels, pic):
+        fig = plt.figure()
+        fig.suptitle(pic, fontsize=14, fontweight='bold')
+        ax = fig.add_subplot(111)
+        ax.set_xlabel(pic)
+        ax.set_ylabel('NDCG')
         colorList = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
-        for key, value in NDCG_DICT.items():
-            plt.plot(labels[::6], value, 'o-', color=colorList.pop(),label=key)
+        for key, value in sorted(NDCG_DICT.items()):
+            plt.plot(labels[::5], value, 'o-', color=colorList.pop(),label=key)
         plt.legend(loc='best')
         plt.savefig('{}.png'.format(pic))
 
@@ -34,7 +39,8 @@ class Command(BaseCommand):
         accessibilityTopnMax = options['accessibilityTopnMax']
         pic = options['pic']
 
-        modeList = ['tfidf', 'kcem', 'kcemCluster', 'hybrid', 'contextNetwork', 'pagerank']
+        modeList = ['tfidf', 'CFN-Vertex-Weight', 'CFN-Vertex-Weight-TFIDF', 'CFN-Vertex-Degree', 'CFN-PageRank']
+        # modeList = ['tfidf', 'kcem', 'kcemCluster', 'hybrid', 'contextNetwork', 'pagerank']
 
         def main(parameter, accessibilityTopn, topN, clusterTopn):
             for method in modeList:
