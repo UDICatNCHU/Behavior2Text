@@ -11,7 +11,6 @@ def behavior2text(request):
         b = Behavior2Text(request.POST['method'], int(request.POST['topN']), int(request.POST['clusterTopn']))
         b.generateTopn(json.loads(request.POST['data']))
         topnsFile = json.load(open(b.output, 'r'))
-        
         for refineData, fileName in topnsFile:
             topnData = b.getTopN(refineData, b.topN) if refineData else []
 

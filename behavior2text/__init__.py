@@ -166,10 +166,8 @@ class Behavior2Text(object):
 
     def generateTopn(self, accessibilityLog):
         data = []
-
         context = ''.join([i['context'] for i in accessibilityLog])
         wordCount = Counter((i[0] for i in rmsw(context, flag=True) if i[1] == 'n'))
-
         # 如果wordCount為空
         # 代表Context Text經過stopword過濾後沒剩下任何字
         if not wordCount:
@@ -188,7 +186,7 @@ class Behavior2Text(object):
             data.append((contextNetwork(self.apiDomain, wordCount), ''))
 
         if self.mode == 'CFN-PageRank':
-            pagerankMain()
+            pagerankMain(self.output)
             return
         json.dump(data, open(self.output, 'w'))
 
