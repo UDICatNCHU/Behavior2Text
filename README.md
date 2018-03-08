@@ -151,7 +151,7 @@ Use these ranking data to calculate NDCG
   ...
 ]
 ```
-  * Use accessibility Topn as hyperparameter, x-axis is accessibility Topn:![accessibility.png](README-pic/accessibilityTopn.png)
+  * Use percentage of accessibility Log as hyperparameter, x-axis is percentage:![percentage.png](README-pic/percentage.png)
   * Use ClusterTopn as hyperparameter, x-axis is ClusterTopn:![clusterTopn.png](README-pic/clusterTopn.png)
   * Use Topn as hyperparameter, x-axis is Topn:![Topn.png](README-pic/Topn.png)
 
