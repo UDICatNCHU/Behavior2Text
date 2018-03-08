@@ -34,12 +34,10 @@ behavior2text/inputData/F701D5A1921C1BAE5530242377BD5349-IRI-1.json
 behavior2text/inputData/G701D5A1921C1BAE5530242377BD5349-IRI-1.json
 behavior2text/inputData/H701D5A1921C1BAE5530242377BD5349-IRI-1.json
 behavior2text/inputData/australia.json
-behavior2text/inputData/clusterTopn.png
 behavior2text/inputData/tailand.json
 behavior2text/labelData/label.json
 behavior2text/labelData/template.json
 behavior2text/management/commands/experiment.py
-behavior2text/management/commands/sentence.py
 behavior2text/utils/__init__.py
 behavior2text/utils/contextNetwork.py
 behavior2text/utils/doc2vec.py

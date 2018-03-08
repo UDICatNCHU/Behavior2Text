@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         # Positional arguments
-        parser.add_argument('--accessibilityTopnMax', type=int, default=0)
+        parser.add_argument('--percentageMax', type=int, default=100)
         parser.add_argument('--topNMax', type=int, default=3)
         parser.add_argument('--clusterTopnMax', type=int, default=3)
         parser.add_argument('--pic', type=str)
@@ -36,38 +36,37 @@ class Command(BaseCommand):
 
         topNMax = options['topNMax']
         clusterTopnMax = options['clusterTopnMax']
-        accessibilityTopnMax = options['accessibilityTopnMax']
+        percentageMax = options['percentageMax']
         pic = options['pic']
 
         modeList = ['tfidf', 'CFN-Vertex-Weight', 'CFN-Vertex-Weight-TFIDF', 'CFN-Vertex-Degree', 'CFN-PageRank']
-        # modeList = ['tfidf', 'kcem', 'kcemCluster', 'hybrid', 'contextNetwork', 'pagerank']
 
-        def main(parameter, accessibilityTopn, topN, clusterTopn):
+        def main(parameter, percentage, topN, clusterTopn):
             for method in modeList:
-                b = Behavior2Text(method, topN, clusterTopn, accessibilityTopn)
+                b = Behavior2Text(method, topN, clusterTopn, percentage)
                 b.buildTopn()
                 ndcg = b.main()
 
                 labels.append(parameter)
                 NDCG_DICT[method].append(ndcg)
 
-        if topNMax!=3 and clusterTopnMax!=3 and accessibilityTopnMax!=0:
-            for accessibilityTopn in pyprind.prog_bar(list(range(0, accessibilityTopnMax))):
+        if topNMax!=3 and clusterTopnMax!=3 and percentageMax!=100:
+            for percentage in pyprind.prog_bar(list(range(1, percentageMax, 10))):
                 for topN in range(1, topNMax):
                     for clusterTopn in range(1, clusterTopnMax):
-                        main((accessibilityTopn+topN+clusterTopn), accessibilityTopn, topN, clusterTopn)
+                        main((percentage+topN+clusterTopn), percentage, topN, clusterTopn)
         elif topNMax!=3:
-            accessibilityTopn, clusterTopn = accessibilityTopnMax, clusterTopnMax
+            percentage, clusterTopn = percentageMax, clusterTopnMax
             for topN in range(1, topNMax):
-                main(topN, accessibilityTopn, topN, clusterTopn)
+                main(topN, percentage, topN, clusterTopn)
         elif clusterTopnMax!=3:
-            accessibilityTopn, topN = accessibilityTopnMax, topNMax
+            percentage, topN = percentageMax, topNMax
             for clusterTopn in range(1, clusterTopnMax):
-                main(clusterTopn, accessibilityTopn, topN, clusterTopn)
-        elif accessibilityTopnMax!=0:
+                main(clusterTopn, percentage, topN, clusterTopn)
+        else:
             topN, clusterTopn = topNMax, clusterTopnMax
-            for accessibilityTopn in range(1, accessibilityTopnMax):
-                main(accessibilityTopn, accessibilityTopn, topN, clusterTopn)
+            for percentage in list(range(1, percentageMax, 10)) + [100]:
+                main(percentage, percentage, topN, clusterTopn)
 
         self.draw(NDCG_DICT, labels, pic)
         self.stdout.write(self.style.SUCCESS('finish !!!'))

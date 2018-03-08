@@ -1,4 +1,4 @@
-import requests, os, json, threading, copy, math
+import requests, os, json, threading, copy, math, random
 from collections import defaultdict, Counter
 from scipy import spatial
 from itertools import takewhile
@@ -12,17 +12,17 @@ from behavior2text.utils.contextNetwork import contextNetwork
 from behavior2text.utils.pagerank import pagerankMain
 
 class Behavior2Text(object):
-    def __init__(self, mode, topN=3, topnKeywordNum=3, accessibilityTopn=0):
+    def __init__(self, mode, topN=3, topnKeywordNum=3, percentage=100):
         self.mode = mode
         self.topN = topN
         self.topnKeywordNum = topnKeywordNum
-        self.accessibilityTopn = accessibilityTopn
+        self.percentage = percentage
 
         self.baseDir = os.path.dirname(os.path.abspath(__file__))
         self.accessibility_log = os.path.join(self.baseDir, 'inputData')
         self.template = json.load(open(os.path.join(self.baseDir, 'labelData', 'template.json'), 'r'))
         self.label = json.load(open(os.path.join(self.baseDir, 'labelData', 'label.json'), 'r'))
-        self.output = '{}-{}.json'.format(self.mode, self.accessibilityTopn)
+        self.output = '{}-{}.json'.format(self.mode, self.percentage)
 
         self.DEBUG = True
         if self.DEBUG:
@@ -138,8 +138,10 @@ class Behavior2Text(object):
         for (dir_path, dir_names, file_names) in os.walk(self.accessibility_log):
             for file in file_names:
                 filePath = os.path.join(dir_path, file)
-                context = ''.join([i['context'] for i in json.load(open(filePath, 'r'))[self.accessibilityTopn:]])
-                wordCount = Counter(rmsw(context, 'n'))
+                contextJson = json.load(open(filePath, 'r'))
+                percentageIndex = len(contextJson) * self.percentage // 100
+                context = ''.join([contextJson[index]['context'] for index in random.sample(range(len(contextJson)), percentageIndex)])
+                wordCount = Counter((i[0] for i in rmsw(context, flag=True) if i[1] == 'n'))
 
                 # 如果wordCount為空
                 # 代表Context Text經過stopword過濾後沒剩下任何字
@@ -165,8 +167,8 @@ class Behavior2Text(object):
     def generateTopn(self, accessibilityLog):
         data = []
 
-        context = ''.join([i['context'] for i in accessibilityLog[self.accessibilityTopn:]])
-        wordCount = Counter(rmsw(context, 'n'))
+        context = ''.join([i['context'] for i in accessibilityLog])
+        wordCount = Counter((i[0] for i in rmsw(context, flag=True) if i[1] == 'n'))
 
         # 如果wordCount為空
         # 代表Context Text經過stopword過濾後沒剩下任何字
@@ -199,7 +201,7 @@ class Behavior2Text(object):
             else:   
                 print(self.sentence(refineData, fileName, DEBUG))
         result = self.NDCG/len(topnsFile)
-        print('NDCG is {}'.format(result))
+        print('{}: NDCG is {}'.format(self.mode, result))
         return result
         
 

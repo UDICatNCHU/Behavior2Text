@@ -185,7 +185,7 @@ url domain:<http://udiclab.cs.nchu.edu.tw>
 
 ### Commands
 
-1. `python3 manage.py experiment --topNMax=<(optional) at least 2> --clusterTopnMax=<(optional) at least 2> --accessibilityTopnMax=<at least 2>`:
+1. `python3 manage.py experiment --topNMax=<(optional) at least 2> --clusterTopnMax=<(optional) at least 2> --percentageMax=<at least 2>`:
     * show NDCG of sequences when using each kind of methods: tfidf, kcem, kcemCluster, hybrid, contextNetwork, pagerank
     * (Optional Usage): `python3 experiment.py`
 2. `python3 manage.py sentence --method=<> --debug=<True/False>`:
@@ -230,8 +230,6 @@ url domain:<http://udiclab.cs.nchu.edu.tw>
 ## Deployment
 
 `behavior2text` is a django-app, so depends on django project.
-
-`behavior2text` 是一般的django插件，所以必須依存於django專案
 
 ## Test
 
