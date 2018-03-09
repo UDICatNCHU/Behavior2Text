@@ -174,7 +174,7 @@ url domain:<http://udiclab.cs.nchu.edu.tw>
   - example code:
     ```
     import requests, json
-    d = json.dumps(accessibility Log!!!)
+    d = json.dumps(json.load(open(logName, 'r')))
     print(requests.post('http://udiclab.cs.nchu.edu.tw/behavior2text/',data={'data':d, 'method':'CFN-Vertex-Weight','topN':3,'clusterTopn':3}).json())
     ```
 

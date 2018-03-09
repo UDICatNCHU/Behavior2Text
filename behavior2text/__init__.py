@@ -184,8 +184,7 @@ class Behavior2Text(object):
             data.append((hybrid(self.apiDomain, wordCount, context), ''))
         elif self.mode == 'CFN-Vertex-Degree':
             data.append((contextNetwork(self.apiDomain, wordCount), ''))
-
-        if self.mode == 'CFN-PageRank':
+        elif self.mode == 'CFN-PageRank':
             pagerankMain(self.output)
             return
         json.dump(data, open(self.output, 'w'))
