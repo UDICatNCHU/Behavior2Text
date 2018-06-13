@@ -57,7 +57,7 @@ class Behavior2Text(object):
                         # 這邊的self.topnKeywordNum是這筆log要比到top幾的relevence candidate keywords
                         topnKeywords = (x[0] for x in sorted(topnKeywordDict['key'].items(), key=lambda x:-x[1])[:self.topnKeywordNum]) if type(list(topnKeywordDict['key'].values())[0]) != list else (x[0] for x in sorted(topnKeywordDict['key'].items(), key=lambda x:-len(x[1]))[:self.topnKeywordNum])
                         for topnKeyword in topnKeywords:
-                            similarity = requests.get(self.apiDomain + '/kem/similarity?k1={}&k2={}'.format(replaceWord, topnKeyword)).json()
+                            similarity = requests.get(self.apiDomain + '/kem/similarity?lang=zh&k1={}&k2={}'.format(replaceWord, topnKeyword)).json()
                             if similarity == {}:
                                 similarity['similarity'] = 0
                             TemplateCandidate[templateIndex][replaceWord][topnKeyword] = similarity['similarity']
