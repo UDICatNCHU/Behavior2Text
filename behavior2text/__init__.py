@@ -26,7 +26,7 @@ class Behavior2Text(object):
 
         self.DEBUG = True
         if self.DEBUG:
-            self.apiDomain = 'http://140.120.13.243'
+            self.apiDomain = 'http://140.120.13.244'
         else:
             self.apiDomain = 'http://udiclab.cs.nchu.edu.tw/'
 

@@ -1,13 +1,8 @@
 import requests
-from .doc2vec import doc2vec
 from collections import defaultdict
 
 def kcem(apiDomain, wordCount):
-    docVec = doc2vec(apiDomain, wordCount)
-    kcemList = requests.get(apiDomain + '/kcem/kcemList?keywords={}'.format('+'.join(wordCount))).json()
-    ###doc2vec version####
-    # result = requests.post(self.apiDomain + '/kcem?keyword={}'.format('+'.join(wordCount)), data={'counter':json.dumps(wordCount)}).json()
-    ######################
+    kcemList = [requests.get(apiDomain + '/kcem?lang=zh&keyword={}'.format(keyword)).json() for keyword in wordCount]
     def countHypernym(kcemList):
         result = defaultdict(dict)
         for kcem in kcemList:
