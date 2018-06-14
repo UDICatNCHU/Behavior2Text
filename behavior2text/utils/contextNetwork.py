@@ -1,5 +1,4 @@
 import requests
-from .doc2vec import doc2vec
 
 def contextNetwork(apiDomain, wordCount):
     def simpleUnion(clusters, unionList):
@@ -62,8 +61,7 @@ def contextNetwork(apiDomain, wordCount):
 
         return clusters
 
-    docVec = doc2vec(apiDomain, wordCount)
-    kcemList = requests.get(apiDomain + '/kcem/kcemList?keywords={}'.format('+'.join(wordCount))).json()
+    kcemList = [requests.get(apiDomain + '/kcem?lang=zh&keyword={}'.format(keyword)).json() for keyword in wordCount]
     # sorting and format
     result = {}
     for cluster in clustering(kcemList):

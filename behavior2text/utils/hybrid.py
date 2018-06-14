@@ -2,7 +2,7 @@ import requests
 from .kcemCluster import kcemCluster
 
 def hybrid(apiDomain, wordCount, context):
-    tfidfDict = dict(requests.post(apiDomain + '/tfidf/tfidf?flag=n', data={'doc':context}).json())
+    tfidfDict = dict(requests.post(apiDomain + '/tfidf/tfidf?flag=n&lang=zh', data={'doc':context}).json())
     result = kcemCluster(apiDomain, wordCount)
 
     refinedResult = []
